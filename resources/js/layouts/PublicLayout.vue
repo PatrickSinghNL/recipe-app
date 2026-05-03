@@ -33,7 +33,7 @@ watch(search, (value) => {
     <div class="min-h-screen bg-background text-foreground transition-colors duration-300">
         <!-- Navbar -->
         <header class="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div class="container flex h-16 items-center justify-between">
+            <div class="container mx-auto px-4 md:px-6 flex h-16 items-center justify-between">
                 <div class="flex items-center gap-6 md:gap-10">
                     <Link :href="home().url" class="flex items-center space-x-2">
                         <AppLogo class="h-8 w-auto" />
@@ -89,15 +89,14 @@ watch(search, (value) => {
         </header>
 
         <!-- Main Content -->
-        <main class="container py-8">
+        <main class="container mx-auto px-4 md:px-6 py-8">
             <slot />
         </main>
 
-        <!-- Footer -->
-        <footer class="border-t py-6 md:py-0">
-            <div class="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
-                <p class="text-center text-sm leading-loose text-muted-foreground md:text-left">
-                    &copy; 2026 Recipe App. Built with Laravel and Vue.
+        <footer class="border-t py-6 md:py-8">
+            <div class="container mx-auto px-4 md:px-6 flex flex-col items-center justify-center gap-4">
+                <p class="text-center text-sm leading-loose text-muted-foreground">
+                    &copy; 2026 Recipe App by Patrick Singh.
                 </p>
             </div>
         </footer>

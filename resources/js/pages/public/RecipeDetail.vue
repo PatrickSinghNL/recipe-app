@@ -23,78 +23,81 @@ const formatTime = (minutes: number) => {
     <Head :title="recipe.name" />
 
     <PublicLayout>
-        <div class="mx-auto max-w-4xl space-y-8">
+        <div class="mx-auto max-w-5xl space-y-8">
             <Link :href="recipesRoutes.index.url()">
-                <Button variant="ghost" class="mb-4">
-                    <ArrowLeft class="mr-2 h-4 w-4" /> Back to Recipes
+                <Button variant="ghost" class="group -ml-2 text-muted-foreground hover:text-primary">
+                    <ArrowLeft class="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                    Back to Recipes
                 </Button>
             </Link>
 
-            <div class="grid gap-8 md:grid-cols-2">
-                <div class="aspect-square overflow-hidden rounded-xl bg-muted">
-                    <img
-                        v-if="recipe.image"
-                        :src="`/storage/${recipe.image}`"
-                        :alt="recipe.name"
-                        class="h-full w-full object-cover"
-                    />
-                    <div v-else class="flex h-full w-full items-center justify-center bg-accent text-accent-foreground">
-                        <span class="text-xl font-medium">No Image</span>
-                    </div>
-                </div>
-
-                <div class="flex flex-col justify-center space-y-6">
-                    <div class="space-y-2">
-                        <h1 class="text-4xl font-bold tracking-tight">{{ recipe.name }}</h1>
-                        <div class="flex items-center gap-4 text-muted-foreground">
-                            <div class="flex items-center gap-1">
-                                <Clock class="h-5 w-5" />
-                                <span>{{ formatTime(recipe.time) }}</span>
-                            </div>
-                            <div class="flex items-center gap-1">
-                                <Users class="h-5 w-5" />
-                                <span>{{ recipe.number_of_persons }} persons</span>
-                            </div>
+            <div class="grid gap-12 lg:grid-cols-2">
+                <!-- Image Section -->
+                <div class="space-y-6">
+                    <div class="aspect-square overflow-hidden rounded-3xl bg-muted shadow-lg">
+                        <img
+                            v-if="recipe.image"
+                            :src="`/storage/${recipe.image}`"
+                            :alt="recipe.name"
+                            class="h-full w-full object-cover"
+                        />
+                        <div v-else class="flex h-full w-full items-center justify-center bg-accent/20 text-accent-foreground">
+                            <span class="text-lg">No Image Available</span>
                         </div>
                     </div>
 
-                    <p class="text-lg leading-relaxed text-muted-foreground">
-                        {{ recipe.description }}
-                    </p>
-                </div>
-            </div>
-
-            <div class="grid gap-12 md:grid-cols-2">
-                <section class="space-y-4">
-                    <h2 class="text-2xl font-bold">Ingredients</h2>
-                    <ul class="space-y-3">
-                        <li v-for="ingredient in recipe.ingredients" :key="ingredient.id" class="flex items-center justify-between rounded-lg border p-3">
-                            <div class="flex items-center gap-3">
-                                <img
-                                    v-if="ingredient.image"
-                                    :src="`/storage/${ingredient.image}`"
-                                    class="h-10 w-10 rounded object-cover"
-                                />
-                                <span class="font-medium">{{ ingredient.name }}</span>
+                    <div class="flex items-center justify-center gap-8 rounded-2xl bg-muted/30 p-6">
+                        <div class="text-center">
+                            <p class="text-xs text-muted-foreground uppercase tracking-widest font-bold">Prep Time</p>
+                            <div class="mt-1 flex items-center justify-center gap-2 text-xl font-bold">
+                                <Clock class="h-5 w-5 text-primary" />
+                                <span>{{ formatTime(recipe.time) }}</span>
                             </div>
-                            <span class="text-muted-foreground">{{ ingredient.quantity }}</span>
-                        </li>
-                    </ul>
-                </section>
+                        </div>
+                        <Separator orientation="vertical" class="h-8" />
+                        <div class="text-center">
+                            <p class="text-xs text-muted-foreground uppercase tracking-widest font-bold">Servings</p>
+                            <div class="mt-1 flex items-center justify-center gap-2 text-xl font-bold">
+                                <Users class="h-5 w-5 text-primary" />
+                                <span>{{ recipe.number_of_persons }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                <section class="space-y-4">
-                    <h2 class="text-2xl font-bold">Supplies</h2>
-                    <ul class="space-y-3">
-                        <li v-for="supply in recipe.supplies" :key="supply.id" class="flex items-center gap-3 rounded-lg border p-3">
-                            <img
-                                v-if="supply.image"
-                                :src="`/storage/${supply.image}`"
-                                class="h-10 w-10 rounded object-cover"
-                            />
-                            <span class="font-medium">{{ supply.name }}</span>
-                        </li>
-                    </ul>
-                </section>
+                <!-- Info Section -->
+                <div class="space-y-8">
+                    <div class="space-y-4">
+                        <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl leading-tight text-foreground">{{ recipe.name }}</h1>
+                        <p class="text-lg leading-relaxed text-muted-foreground">{{ recipe.description }}</p>
+                    </div>
+
+                    <Separator />
+
+                    <div class="space-y-6">
+                        <h2 class="text-2xl font-bold tracking-tight">Ingredients</h2>
+                        <ul class="grid gap-4 sm:grid-cols-2">
+                            <li v-for="ingredient in recipe.ingredients" :key="ingredient.id" class="flex items-center gap-4 rounded-2xl border border-border/40 bg-card/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-primary/40 hover:shadow-md">
+                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold">
+                                    {{ ingredient.quantity?.match(/\d+/)?.[0] || '1' }}
+                                </div>
+                                <div>
+                                    <p class="font-bold text-sm leading-tight">{{ ingredient.name }}</p>
+                                    <p class="text-[11px] text-muted-foreground font-medium uppercase tracking-wider mt-0.5">{{ ingredient.quantity }}</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="space-y-6">
+                        <h2 class="text-2xl font-bold tracking-tight">Supplies Needed</h2>
+                        <div class="flex flex-wrap gap-3">
+                            <Badge v-for="supply in recipe.supplies" :key="supply.id" variant="secondary" class="rounded-full px-5 py-2 text-xs font-semibold shadow-sm transition-colors hover:bg-primary hover:text-primary-foreground">
+                                {{ supply.name }}
+                            </Badge>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </PublicLayout>

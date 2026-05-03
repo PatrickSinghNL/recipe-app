@@ -37,5 +37,20 @@ class DatabaseSeeder extends Seeder
 
         $recipe->ingredients()->attach([$ingredient1->id, $ingredient2->id, $ingredient3->id, $ingredient4->id]);
         $recipe->supplies()->attach([$supply1->id, $supply2->id]);
+
+        $recipe2 = \App\Models\Recipe::create([
+            'name' => 'Italian Margherita Pizza',
+            'description' => 'A simple yet delicious pizza with fresh tomatoes, mozzarella, and basil.',
+            'time' => 45,
+            'number_of_persons' => 4,
+            'is_published' => true,
+        ]);
+
+        $ingredient5 = \App\Models\Ingredient::create(['name' => 'Pizza Dough', 'quantity' => '500g', 'price' => 2.00]);
+        $ingredient6 = \App\Models\Ingredient::create(['name' => 'Mozzarella', 'quantity' => '250g', 'price' => 3.50]);
+        $ingredient7 = \App\Models\Ingredient::create(['name' => 'Basil', 'quantity' => '1 bunch', 'price' => 1.00]);
+
+        $recipe2->ingredients()->attach([$ingredient5->id, $ingredient6->id, $ingredient7->id]);
+        $recipe2->supplies()->attach([$supply2->id]);
     }
 }
