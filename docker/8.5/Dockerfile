@@ -82,10 +82,36 @@ RUN groupadd --force -g $WWWGROUP sail
 RUN useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1337 sail
 RUN git config --global --add safe.directory /var/www/html
 
+RUN echo "alias sail=\"./vendor/bin/sail\"" >> /home/sail/.bashrc
+RUN echo "alias art=\"php artisan\"" >> /home/sail/.bashrc
+RUN echo "alias gs=\"git status\"" >> /home/sail/.bashrc
+RUN echo "alias gp=\"git push\"" >> /home/sail/.bashrc
+RUN echo "alias gpl=\"git pull\"" >> /home/sail/.bashrc
+RUN echo "alias ga=\"git add .\"" >> /home/sail/.bashrc
+RUN echo "alias gc=\"git commit -m \"" >> /home/sail/.bashrc
+RUN echo "alias gmd=\"git merge Development\"" >> /home/sail/.bashrc
+RUN echo "alias gf=\"git fetch\"" >> /home/sail/.bashrc
+
 COPY start-container /usr/local/bin/start-container
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY php.ini /etc/php/8.5/cli/conf.d/99-sail.ini
 RUN chmod +x /usr/local/bin/start-container
+
+ARG XDEBUG
+ARG XDEBUG_PORT
+ARG XDEBUG_IP
+RUN if [ "${XDEBUG}" = "true" ] ; then \
+    apt-get install -y php8.5-xdebug \
+    && echo "[XDebug]" > /etc/php/8.5/cli/php.ini \
+    && echo "xdebug.mode = debug" >> /etc/php/8.5/cli/php.ini \
+    && echo "xdebug.start_with_request = yes" >> /etc/php/8.5/cli/php.ini \
+    && echo "xdebug.discover_client_host = true" >> /etc/php/8.5/cli/php.ini \
+    && echo "xdebug.client_host = ${XDEBUG_IP}" >> /etc/php/8.5/cli/php.ini \
+    && echo "xdebug.client_port = ${XDEBUG_PORT}" >> /etc/php/8.5/cli/php.ini \
+    && apt-get -y autoremove \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* ; \
+    fi;
 
 EXPOSE 80/tcp
 

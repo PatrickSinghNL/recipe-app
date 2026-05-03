@@ -6,7 +6,7 @@ import { Check } from "lucide-vue-next"
 import { CheckboxIndicator, CheckboxRoot, useForwardPropsEmits } from "reka-ui"
 import { cn } from "@/lib/utils"
 
-const props = defineProps<CheckboxRootProps & { class?: HTMLAttributes["class"] }>()
+const props = defineProps<CheckboxRootProps & { class?: HTMLAttributes["class"], checked?: boolean | 'indeterminate', defaultChecked?: boolean | 'indeterminate' }>()
 const emits = defineEmits<CheckboxRootEmits>()
 
 const delegatedProps = reactiveOmit(props, "class")

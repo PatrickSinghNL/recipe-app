@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { ArrowLeft, Save, Loader2 } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import MultiSelect from '@/components/ui/multi-select/MultiSelect.vue';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Save, Loader2 } from 'lucide-vue-next';
-import { ref } from 'vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import admin from '@/routes/admin';
 
 const props = defineProps<{
@@ -22,7 +22,7 @@ const form = useForm({
     description: props.recipe?.description ?? '',
     time: props.recipe?.time ?? 30,
     number_of_persons: props.recipe?.number_of_persons ?? 2,
-    is_published: props.recipe?.is_published ?? false,
+    is_published: props.recipe ? !!props.recipe.is_published : false,
     image: null as File | null,
     ingredients: props.recipe?.ingredients.map((i: any) => i.id) ?? [],
     supplies: props.recipe?.supplies.map((s: any) => s.id) ?? [],
@@ -40,23 +40,6 @@ const submit = () => {
     }
 };
 
-const toggleIngredient = (id: number) => {
-    const index = form.ingredients.indexOf(id);
-    if (index > -1) {
-        form.ingredients.splice(index, 1);
-    } else {
-        form.ingredients.push(id);
-    }
-};
-
-const toggleSupply = (id: number) => {
-    const index = form.supplies.indexOf(id);
-    if (index > -1) {
-        form.supplies.splice(index, 1);
-    } else {
-        form.supplies.push(id);
-    }
-};
 
 defineOptions({
     layout: AppLayout,
@@ -117,19 +100,12 @@ defineOptions({
                         <CardTitle>Ingredients</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            <div v-for="ingredient in ingredients" :key="ingredient.id" class="flex items-center space-x-2">
-                                <Checkbox
-                                    :id="'ing-' + ingredient.id"
-                                    :checked="form.ingredients.includes(ingredient.id)"
-                                    @update:checked="toggleIngredient(ingredient.id)"
-                                />
-                                <Label :for="'ing-' + ingredient.id" class="text-sm font-normal cursor-pointer truncate">
-                                    {{ ingredient.name }}
-                                </Label>
-                            </div>
-                        </div>
-                        <p v-if="ingredients.length === 0" class="text-sm text-muted-foreground italic">No ingredients available. Create them first.</p>
+                        <MultiSelect
+                            v-model="form.ingredients"
+                            :options="ingredients"
+                            placeholder="Search ingredients..."
+                        />
+                        <p v-if="ingredients.length === 0" class="text-sm text-muted-foreground italic mt-2">No ingredients available. Create them first.</p>
                     </CardContent>
                 </Card>
 
@@ -138,19 +114,12 @@ defineOptions({
                         <CardTitle>Supplies</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            <div v-for="supply in supplies" :key="supply.id" class="flex items-center space-x-2">
-                                <Checkbox
-                                    :id="'sup-' + supply.id"
-                                    :checked="form.supplies.includes(supply.id)"
-                                    @update:checked="toggleSupply(supply.id)"
-                                />
-                                <Label :for="'sup-' + supply.id" class="text-sm font-normal cursor-pointer truncate">
-                                    {{ supply.name }}
-                                </Label>
-                            </div>
-                        </div>
-                        <p v-if="supplies.length === 0" class="text-sm text-muted-foreground italic">No supplies available. Create them first.</p>
+                        <MultiSelect
+                            v-model="form.supplies"
+                            :options="supplies"
+                            placeholder="Search supplies..."
+                        />
+                        <p v-if="supplies.length === 0" class="text-sm text-muted-foreground italic mt-2">No supplies available. Create them first.</p>
                     </CardContent>
                 </Card>
             </div>
@@ -162,8 +131,8 @@ defineOptions({
                     </CardHeader>
                     <CardContent class="space-y-6">
                         <div class="flex items-center space-x-2">
-                            <Checkbox id="is_published" v-model:checked="form.is_published" />
-                            <Label for="is_published">Published</Label>
+                            <Checkbox id="is_published" v-model="form.is_published" />
+                            <Label for="is_published" class="cursor-pointer">Published</Label>
                         </div>
 
                         <div class="space-y-2">

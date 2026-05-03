@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Recipe;
 use App\Models\Ingredient;
+use App\Models\Recipe;
 use App\Models\Supply;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class RecipeController extends Controller
 {
@@ -43,6 +43,8 @@ class RecipeController extends Controller
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('recipes', 'public');
         }
+
+        $validated['is_published'] = $request->boolean('is_published');
 
         $recipe = Recipe::create($validated);
 
@@ -85,6 +87,8 @@ class RecipeController extends Controller
             }
             $validated['image'] = $request->file('image')->store('recipes', 'public');
         }
+
+        $validated['is_published'] = $request->boolean('is_published');
 
         $recipe->update($validated);
 
