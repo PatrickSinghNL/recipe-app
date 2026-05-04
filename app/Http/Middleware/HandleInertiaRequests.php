@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -46,7 +47,7 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
             'settings' => [
-                'registration_enabled' => \App\Models\Setting::isEnabled('registration_enabled'),
+                'registration_enabled' => Setting::isEnabled('registration_enabled'),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

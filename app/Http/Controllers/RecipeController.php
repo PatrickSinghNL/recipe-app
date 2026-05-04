@@ -14,7 +14,7 @@ class RecipeController extends Controller
         $query = Recipe::with('categories')->where('is_published', true);
 
         if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
 
         if ($request->has('category') && $request->category !== '') {
@@ -32,7 +32,7 @@ class RecipeController extends Controller
 
     public function show(Recipe $recipe)
     {
-        if (!$recipe->is_published) {
+        if (! $recipe->is_published) {
             abort(404);
         }
 

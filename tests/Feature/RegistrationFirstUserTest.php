@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\User;
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -17,7 +17,7 @@ test('the first registered user is automatically approved and made admin', funct
     ]);
 
     $response->assertRedirect('/dashboard');
-    
+
     $user = User::first();
     expect($user->is_approved)->toBeTrue();
     expect($user->is_admin)->toBeTrue();
@@ -31,7 +31,7 @@ test('subsequent users are not approved or admin', function () {
         'is_approved' => true,
         'is_admin' => true,
     ]);
-    
+
     Setting::set('registration_enabled', true);
 
     $this->post('/register', [

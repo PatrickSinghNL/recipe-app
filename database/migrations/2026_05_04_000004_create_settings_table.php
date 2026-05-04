@@ -19,7 +19,7 @@ return new class extends Migration
         });
 
         // Seed default settings
-        \DB::table('settings')->insert([
+        DB::table('settings')->insert([
             ['key' => 'registration_enabled', 'value' => '1', 'created_at' => now(), 'updated_at' => now()],
         ]);
     }

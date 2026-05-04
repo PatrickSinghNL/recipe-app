@@ -13,11 +13,11 @@ class EnsureUserIsApproved
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && !Auth::user()->is_approved) {
+        if (Auth::check() && ! Auth::user()->is_approved) {
             // If they are on the pending page, let them through
             if ($request->routeIs('auth.pending') ||
                 $request->routeIs('logout') ||

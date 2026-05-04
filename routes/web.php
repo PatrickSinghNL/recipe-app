@@ -1,19 +1,22 @@
 <?php
 
-use App\Http\Controllers\RecipeController;
-use App\Http\Controllers\Admin\RecipeController as AdminRecipeController;
-use App\Http\Controllers\Admin\IngredientController;
-use App\Http\Controllers\Admin\SupplyController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\IngredientController;
+use App\Http\Controllers\Admin\RecipeController as AdminRecipeController;
+use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\SupplyController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\RecipeController;
+use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Route;
-use Laravel\Fortify\Features;
 
 Route::get('/', [RecipeController::class, 'index'])->name('recipes.index');
 Route::get('/recipes', fn () => redirect('/'))->name('home');
 Route::get('/recipes/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
 
-Route::middleware(['auth', 'verified', \App\Http\Middleware\EnsureUserIsAdmin::class])->group(function () {
-    Route::get('dashboard', \App\Http\Controllers\Admin\DashboardController::class)->name('dashboard');
+Route::middleware(['auth', 'verified', EnsureUserIsAdmin::class])->group(function () {
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('recipes', AdminRecipeController::class);
@@ -22,14 +25,14 @@ Route::middleware(['auth', 'verified', \App\Http\Middleware\EnsureUserIsAdmin::c
         Route::resource('categories', CategoryController::class);
 
         // User Management
-        Route::get('users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
-        Route::post('users/{user}/approve', [\App\Http\Controllers\Admin\UserController::class, 'approve'])->name('users.approve');
-        Route::post('users/{user}/toggle-admin', [\App\Http\Controllers\Admin\UserController::class, 'toggleAdmin'])->name('users.toggle-admin');
-        Route::delete('users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('users.destroy');
+        Route::get('users', [UserController::class, 'index'])->name('users.index');
+        Route::post('users/{user}/approve', [UserController::class, 'approve'])->name('users.approve');
+        Route::post('users/{user}/toggle-admin', [UserController::class, 'toggleAdmin'])->name('users.toggle-admin');
+        Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
         // Settings
-        Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
-        Route::post('settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
+        Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
+        Route::post('settings', [SettingController::class, 'update'])->name('settings.update');
     });
 });
 

@@ -4,6 +4,7 @@ namespace App\Actions\Fortify;
 
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
@@ -19,7 +20,7 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
-        if (!\App\Models\Setting::isEnabled('registration_enabled')) {
+        if (! Setting::isEnabled('registration_enabled')) {
             abort(403, 'Registration is currently disabled.');
         }
 
@@ -29,7 +30,7 @@ class CreateNewUser implements CreatesNewUsers
         ])->validate();
 
         $isFirstUser = User::count() === 0;
-        
+
         $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
@@ -39,7 +40,7 @@ class CreateNewUser implements CreatesNewUsers
         ]);
 
         if ($isFirstUser) {
-            \App\Models\Setting::set('registration_enabled', 'false');
+            Setting::set('registration_enabled', 'false');
         }
 
         return $user;

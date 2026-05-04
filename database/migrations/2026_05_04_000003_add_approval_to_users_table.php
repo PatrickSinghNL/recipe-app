@@ -17,14 +17,14 @@ return new class extends Migration
         });
 
         // Auto-approve existing users and make the first one an admin
-        $firstUser = \DB::table('users')->first();
+        $firstUser = DB::table('users')->first();
         if ($firstUser) {
-            \DB::table('users')->where('id', $firstUser->id)->update([
+            DB::table('users')->where('id', $firstUser->id)->update([
                 'is_approved' => true,
                 'is_admin' => true,
             ]);
             // Approve others but don't make them admins
-            \DB::table('users')->where('id', '!=', $firstUser->id)->update([
+            DB::table('users')->where('id', '!=', $firstUser->id)->update([
                 'is_approved' => true,
             ]);
         }
