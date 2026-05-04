@@ -17,11 +17,16 @@ class Recipe extends Model
 
     public function ingredients()
     {
-        return $this->belongsToMany(Ingredient::class);
+        return $this->belongsToMany(Ingredient::class)->withPivot('quantity');
     }
 
     public function supplies()
     {
         return $this->belongsToMany(Supply::class);
+    }
+
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class);
     }
 }

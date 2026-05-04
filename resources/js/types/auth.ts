@@ -4,13 +4,15 @@ export type User = {
     email: string;
     avatar?: string;
     email_verified_at: string | null;
+    is_admin: boolean;
+    is_approved: boolean;
     created_at: string;
     updated_at: string;
     [key: string]: unknown;
 };
 
 export type Auth = {
-    user: User;
+    user: User | null;
 };
 
 export type TwoFactorConfigContent = {

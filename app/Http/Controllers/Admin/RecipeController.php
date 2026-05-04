@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Ingredient;
 use App\Models\Recipe;
 use App\Models\Supply;
@@ -15,7 +16,7 @@ class RecipeController extends Controller
     public function index()
     {
         return Inertia::render('admin/recipes/Index', [
-            'recipes' => Recipe::latest()->get(),
+            'recipes' => Recipe::with('categories')->latest()->get(),
         ]);
     }
 
@@ -24,6 +25,7 @@ class RecipeController extends Controller
         return Inertia::render('admin/recipes/Form', [
             'ingredients' => Ingredient::all(),
             'supplies' => Supply::all(),
+            'categories' => Category::all(),
         ]);
     }
 
@@ -37,7 +39,11 @@ class RecipeController extends Controller
             'is_published' => 'required|boolean',
             'image' => 'nullable|image|max:2048',
             'ingredients' => 'nullable|array',
+            'ingredients.*.id' => 'exists:ingredients,id',
+            'ingredients.*.quantity' => 'nullable|string|max:255',
             'supplies' => 'nullable|array',
+            'categories' => 'nullable|array',
+            'categories.*' => 'exists:categories,id',
         ]);
 
         if ($request->hasFile('image')) {
@@ -49,11 +55,18 @@ class RecipeController extends Controller
         $recipe = Recipe::create($validated);
 
         if ($request->has('ingredients')) {
-            $recipe->ingredients()->sync($request->ingredients);
+            $ingredients = collect($request->ingredients)->mapWithKeys(function ($item) {
+                return [$item['id'] => ['quantity' => $item['quantity'] ?? null]];
+            })->toArray();
+            $recipe->ingredients()->sync($ingredients);
         }
 
         if ($request->has('supplies')) {
             $recipe->supplies()->sync($request->supplies);
+        }
+
+        if ($request->has('categories')) {
+            $recipe->categories()->sync($request->categories);
         }
 
         return redirect()->route('admin.recipes.index')->with('success', 'Recipe created.');
@@ -62,9 +75,10 @@ class RecipeController extends Controller
     public function edit(Recipe $recipe)
     {
         return Inertia::render('admin/recipes/Form', [
-            'recipe' => $recipe->load(['ingredients', 'supplies']),
+            'recipe' => $recipe->load(['ingredients', 'supplies', 'categories']),
             'ingredients' => Ingredient::all(),
             'supplies' => Supply::all(),
+            'categories' => Category::all(),
         ]);
     }
 
@@ -78,7 +92,11 @@ class RecipeController extends Controller
             'is_published' => 'required|boolean',
             'image' => 'nullable|image|max:2048',
             'ingredients' => 'nullable|array',
+            'ingredients.*.id' => 'exists:ingredients,id',
+            'ingredients.*.quantity' => 'nullable|string|max:255',
             'supplies' => 'nullable|array',
+            'categories' => 'nullable|array',
+            'categories.*' => 'exists:categories,id',
         ]);
 
         if ($request->hasFile('image')) {
@@ -92,8 +110,12 @@ class RecipeController extends Controller
 
         $recipe->update($validated);
 
-        $recipe->ingredients()->sync($request->ingredients ?? []);
+        $ingredients = collect($request->ingredients ?? [])->mapWithKeys(function ($item) {
+            return [$item['id'] => ['quantity' => $item['quantity'] ?? null]];
+        })->toArray();
+        $recipe->ingredients()->sync($ingredients);
         $recipe->supplies()->sync($request->supplies ?? []);
+        $recipe->categories()->sync($request->categories ?? []);
 
         return redirect()->route('admin.recipes.index')->with('success', 'Recipe updated.');
     }

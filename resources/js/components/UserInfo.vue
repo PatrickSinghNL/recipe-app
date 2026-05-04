@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { useInitials } from '@/composables/useInitials';
 import type { User } from '@/types';
 
@@ -30,7 +31,10 @@ const showAvatar = computed(
     </Avatar>
 
     <div v-if="user" class="grid flex-1 text-left text-sm leading-tight">
-        <span class="truncate font-medium">{{ user.name }}</span>
+        <div class="flex items-center gap-2">
+            <span class="truncate font-medium">{{ user.name }}</span>
+            <Badge v-if="user.is_admin" variant="destructive" class="h-4 px-1 text-[8px] uppercase">Admin</Badge>
+        </div>
         <span v-if="showEmail" class="truncate text-xs text-muted-foreground">{{
             user.email
         }}</span>

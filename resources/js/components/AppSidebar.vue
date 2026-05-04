@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, LayoutGrid, ExternalLink } from 'lucide-vue-next';
+import { BookOpen, LayoutGrid, ExternalLink, Users, Settings } from 'lucide-vue-next';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -14,8 +14,8 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import admin from '@/routes/admin';
 import { dashboard, home } from '@/routes';
+import admin from '@/routes/admin';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -30,6 +30,11 @@ const mainNavItems: NavItem[] = [
         icon: BookOpen,
     },
     {
+        title: 'Categories',
+        href: admin.categories.index.url(),
+        icon: LayoutGrid,
+    },
+    {
         title: 'Ingredients',
         href: admin.ingredients.index.url(),
         icon: LayoutGrid,
@@ -38,6 +43,21 @@ const mainNavItems: NavItem[] = [
         title: 'Supplies',
         href: admin.supplies.index.url(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Settings',
+        href: admin.settings.index.url(),
+        icon: Settings,
+        items: [
+            {
+                title: 'System Settings',
+                href: admin.settings.index.url(),
+            },
+            {
+                title: 'User Management',
+                href: admin.users.index.url(),
+            },
+        ],
     },
 ];
 

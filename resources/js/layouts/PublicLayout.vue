@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import { Search, Moon, Sun, Monitor } from 'lucide-vue-next';
-import { useAppearance } from '@/composables/useAppearance';
+import { ref, watch } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ref, watch } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { Input } from '@/components/ui/input';
+import { useAppearance } from '@/composables/useAppearance';
 import { home, login, dashboard } from '@/routes';
 import recipes from '@/routes/recipes';
 
@@ -96,7 +96,7 @@ watch(search, (value) => {
         <footer class="border-t py-6 md:py-8">
             <div class="container mx-auto px-4 md:px-6 flex flex-col items-center justify-center gap-4">
                 <p class="text-center text-sm leading-loose text-muted-foreground">
-                    &copy; 2026 Recipe App by Patrick Singh.
+                    &copy; 2026 Recipe App by Patrick Singh
                 </p>
             </div>
         </footer>

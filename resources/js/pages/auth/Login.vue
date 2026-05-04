@@ -102,7 +102,7 @@ defineProps<{
 
         <div
             class="text-center text-sm text-muted-foreground"
-            v-if="canRegister"
+            v-if="canRegister && $page.props.settings.registration_enabled"
         >
             Don't have an account?
             <TextLink :href="register()" :tabindex="5">Sign up</TextLink>

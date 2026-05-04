@@ -10,11 +10,13 @@ import MultiSelect from '@/components/ui/multi-select/MultiSelect.vue';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import admin from '@/routes/admin';
+import { computed } from 'vue';
 
 const props = defineProps<{
     recipe?: any;
     ingredients: any[];
     supplies: any[];
+    categories: any[];
 }>();
 
 const form = useForm({
@@ -22,10 +24,34 @@ const form = useForm({
     description: props.recipe?.description ?? '',
     time: props.recipe?.time ?? 30,
     number_of_persons: props.recipe?.number_of_persons ?? 2,
+    categories: props.recipe?.categories.map((c: any) => c.id) ?? [],
     is_published: props.recipe ? !!props.recipe.is_published : false,
     image: null as File | null,
-    ingredients: props.recipe?.ingredients.map((i: any) => i.id) ?? [],
+    ingredients: props.recipe?.ingredients.map((i: any) => ({
+        id: i.id,
+        name: i.name,
+        quantity: i.pivot?.quantity ?? ''
+    })) ?? [] as { id: number; name: string; quantity: string }[],
     supplies: props.recipe?.supplies.map((s: any) => s.id) ?? [],
+});
+
+const selectedIngredientIds = computed({
+    get: () => form.ingredients.map((i: any) => i.id),
+    set: (newIds: number[]) => {
+        // Remove ingredients that are no longer in newIds
+        form.ingredients = form.ingredients.filter((i: any) => newIds.includes(i.id));
+        // Add new ingredients
+        newIds.forEach(id => {
+            if (!form.ingredients.some((i: any) => i.id === id)) {
+                const ingredient = props.ingredients.find(i => i.id === id);
+                form.ingredients.push({
+                    id: id,
+                    name: ingredient?.name ?? '',
+                    quantity: ''
+                });
+            }
+        });
+    }
 });
 
 const submit = () => {
@@ -92,6 +118,17 @@ defineOptions({
                                 <p v-if="form.errors.number_of_persons" class="text-sm text-destructive">{{ form.errors.number_of_persons }}</p>
                             </div>
                         </div>
+
+                        <div class="space-y-2">
+                            <Label>Categories</Label>
+                            <MultiSelect
+                                v-model="form.categories"
+                                :options="categories"
+                                placeholder="Search categories..."
+                            />
+                            <p v-if="categories.length === 0" class="text-sm text-muted-foreground italic mt-2">No categories available. Create them first.</p>
+                            <p v-if="form.errors.categories" class="text-sm text-destructive">{{ form.errors.categories }}</p>
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -99,12 +136,27 @@ defineOptions({
                     <CardHeader>
                         <CardTitle>Ingredients</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent class="space-y-4">
                         <MultiSelect
-                            v-model="form.ingredients"
+                            v-model="selectedIngredientIds"
                             :options="ingredients"
                             placeholder="Search ingredients..."
                         />
+                        
+                        <div v-if="form.ingredients.length > 0" class="space-y-3 pt-4 border-t">
+                            <Label class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Specify Quantities</Label>
+                            <div v-for="ingredient in form.ingredients" :key="ingredient.id" class="flex items-center gap-4">
+                                <div class="flex-1 text-sm font-medium">{{ ingredient.name }}</div>
+                                <div class="w-1/3">
+                                    <Input 
+                                        v-model="ingredient.quantity" 
+                                        placeholder="e.g. 200g" 
+                                        class="h-8 text-xs"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
                         <p v-if="ingredients.length === 0" class="text-sm text-muted-foreground italic mt-2">No ingredients available. Create them first.</p>
                     </CardContent>
                 </Card>

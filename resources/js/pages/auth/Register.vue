@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { XCircle } from 'lucide-vue-next';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 
@@ -21,7 +22,27 @@ defineOptions({
 <template>
     <Head title="Register" />
 
+    <div v-if="!$page.props.settings.registration_enabled" class="flex flex-col items-center text-center space-y-6 py-8">
+        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-muted">
+            <XCircle class="h-10 w-10 text-muted-foreground" />
+        </div>
+        <div class="space-y-2">
+            <h1 class="text-2xl font-bold tracking-tight">Registration Disabled</h1>
+            <p class="text-muted-foreground">
+                Public registration is currently disabled by the administrator.
+            </p>
+        </div>
+        <div class="w-full pt-4">
+            <Link :href="login()">
+                <Button variant="outline" class="w-full">
+                    Back to Login
+                </Button>
+            </Link>
+        </div>
+    </div>
+
     <Form
+        v-else
         v-bind="store.form()"
         :reset-on-success="['password', 'password_confirmation']"
         v-slot="{ errors, processing }"

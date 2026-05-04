@@ -31,7 +31,7 @@ const { isCurrentOrParentUrl } = useCurrentUrl();
 <template>
     <div class="px-4 py-6">
         <Heading
-            title="Settings"
+            title="User Settings"
             description="Manage your profile and account settings"
         />
 

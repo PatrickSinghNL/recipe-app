@@ -45,6 +45,7 @@ defineOptions({
                         <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                             <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[100px]">Image</th>
                             <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Name</th>
+                            <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Categories</th>
                             <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
                             <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Created</th>
                             <th class="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Actions</th>
@@ -61,6 +62,13 @@ defineOptions({
                                 <div v-else class="h-12 w-12 rounded bg-muted flex items-center justify-center text-[10px]">No Image</div>
                             </td>
                             <td class="p-4 align-middle font-medium">{{ recipe.name }}</td>
+                            <td class="p-4 align-middle">
+                                <div class="flex flex-wrap gap-1">
+                                    <Badge v-for="category in recipe.categories" :key="category.id" variant="outline" class="text-[10px]">
+                                        {{ category.name }}
+                                    </Badge>
+                                </div>
+                            </td>
                             <td class="p-4 align-middle">
                                 <Badge :variant="recipe.is_published ? 'default' : 'secondary'">
                                     {{ recipe.is_published ? 'Published' : 'Draft' }}

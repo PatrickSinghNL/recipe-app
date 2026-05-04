@@ -10,6 +10,7 @@ import recipesRoutes from '@/routes/recipes';
 
 defineProps<{
     recipes: any[];
+    categories: any[];
     filters: any;
 }>();
 
@@ -43,7 +44,30 @@ const formatTime = (minutes: number) => {
                 <div class="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-black/10 blur-3xl"></div>
             </section>
 
-            <div class="space-y-6">
+            <div class="space-y-8">
+                <!-- Category Filters -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <Link
+                        :href="recipesRoutes.index.url()"
+                        :class="[
+                            'rounded-full px-5 py-2 text-sm font-semibold transition-all duration-300',
+                            !filters.category ? 'bg-primary text-primary-foreground shadow-lg scale-105' : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                        ]"
+                    >
+                        All Recipes
+                    </Link>
+                    <Link
+                        v-for="category in categories"
+                        :key="category.id"
+                        :href="recipesRoutes.index.url({ query: { category: category.slug } })"
+                        :class="[
+                            'rounded-full px-5 py-2 text-sm font-semibold transition-all duration-300',
+                            filters.category === category.slug ? 'bg-primary text-primary-foreground shadow-lg scale-105' : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                        ]"
+                    >
+                        {{ category.name }}
+                    </Link>
+                </div>
                 <div class="flex items-center justify-between">
                     <h2 class="text-2xl font-bold tracking-tight">Recent Recipes</h2>
                     <Badge variant="secondary" class="rounded-full px-4 py-1">{{ recipes.length }} Recipes</Badge>
@@ -70,6 +94,11 @@ const formatTime = (minutes: number) => {
                                 </div>
                             </Link>
                             <div class="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                            <div class="absolute bottom-3 left-3 flex flex-wrap gap-1">
+                                <Badge v-for="category in recipe.categories" :key="category.id" variant="secondary" class="bg-white/90 text-[10px] font-bold uppercase tracking-wider text-primary backdrop-blur-sm dark:bg-black/50 dark:text-white">
+                                    {{ category.name }}
+                                </Badge>
+                            </div>
                             <Button
                                 variant="secondary"
                                 size="icon"
