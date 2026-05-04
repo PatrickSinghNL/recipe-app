@@ -4,7 +4,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Pencil, Trash2, Save, X } from 'lucide-vue-next';
+import { Plus, Pencil, Trash2 } from 'lucide-vue-next';
 import { ref } from 'vue';
 import {
     Dialog,
@@ -16,7 +16,7 @@ import {
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue';
 import admin from '@/routes/admin';
 
-const props = defineProps<{
+defineProps<{
     ingredients: any[];
 }>();
 
@@ -73,9 +73,12 @@ const confirmDelete = (id: number) => {
 };
 
 const handleDelete = () => {
-    if (!deleteId.value) return;
+    if (!deleteId.value) {
+        return;
+    }
+
     deleteLoading.value = true;
-    router.delete(admin.ingredients.destroy.url(deleteId.value), {
+    router.post(admin.ingredients.destroy.url(deleteId.value), { _method: 'DELETE' }, {
         onFinish: () => {
             deleteLoading.value = false;
             deleteId.value = null;

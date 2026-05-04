@@ -21,9 +21,12 @@ const confirmDelete = (id: number) => {
 };
 
 const handleDelete = () => {
-    if (!deleteId.value) return;
+    if (!deleteId.value) {
+        return;
+    }
+
     deleteLoading.value = true;
-    router.delete(admin.recipes.destroy.url(deleteId.value), {
+    router.post(admin.recipes.destroy.url(deleteId.value), { _method: 'DELETE' }, {
         onFinish: () => {
             deleteLoading.value = false;
             deleteId.value = null;

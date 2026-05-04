@@ -16,7 +16,7 @@ import {
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue';
 import admin from '@/routes/admin';
 
-const props = defineProps<{
+defineProps<{
     categories: any[];
 }>();
 
@@ -64,9 +64,12 @@ const confirmDelete = (id: number) => {
 };
 
 const handleDelete = () => {
-    if (!deleteId.value) return;
+    if (!deleteId.value) {
+        return;
+    }
+
     deleteLoading.value = true;
-    router.delete(admin.categories.destroy.url(deleteId.value), {
+    router.post(admin.categories.destroy.url(deleteId.value), { _method: 'DELETE' }, {
         onFinish: () => {
             deleteLoading.value = false;
             deleteId.value = null;

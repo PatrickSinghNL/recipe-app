@@ -3,7 +3,7 @@ import { Head, router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Shield, Trash2, User } from 'lucide-vue-next';
+import { CheckCircle, Shield, Trash2 } from 'lucide-vue-next';
 import { ref } from 'vue';
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue';
 import admin from '@/routes/admin';
@@ -28,9 +28,12 @@ const confirmDelete = (id: number) => {
 };
 
 const handleDelete = () => {
-    if (!deleteId.value) return;
+    if (!deleteId.value) {
+        return;
+    }
+
     deleteLoading.value = true;
-    router.delete(admin.users.destroy.url(deleteId.value), {
+    router.post(admin.users.destroy.url(deleteId.value), { _method: 'DELETE' }, {
         onFinish: () => {
             deleteLoading.value = false;
             deleteId.value = null;
