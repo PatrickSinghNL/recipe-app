@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form, Head, setLayoutProps } from '@inertiajs/vue3';
-import { computed, ref, watchEffect } from 'vue';
+import { computed, nextTick, onMounted, ref, watchEffect } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,7 +44,23 @@ const toggleRecoveryMode = (clearErrors: () => void): void => {
     showRecoveryInput.value = !showRecoveryInput.value;
     clearErrors();
     code.value = '';
+    focusInput();
 };
+
+const focusInput = () => {
+    nextTick(() => {
+        const id = showRecoveryInput.value ? 'recovery_code' : 'otp';
+        const input = document.getElementById(id);
+
+        if (input) {
+            input.focus();
+        }
+    });
+};
+
+onMounted(() => {
+    focusInput();
+});
 
 </script>
 
@@ -107,6 +123,7 @@ const toggleRecoveryMode = (clearErrors: () => void): void => {
                 #default="{ errors, processing, clearErrors }"
             >
                 <Input
+                    id="recovery_code"
                     name="recovery_code"
                     type="text"
                     placeholder="Enter recovery code"
