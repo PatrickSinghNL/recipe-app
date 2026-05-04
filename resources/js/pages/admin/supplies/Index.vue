@@ -42,7 +42,9 @@ const handleImageChange = (event: any) => {
 
 const openCreate = () => {
     editingSupply.value = null;
-    form.reset();
+    form.name = '';
+    form.image = null;
+    form.clearErrors();
     imagePreview.value = null;
     isDialogOpen.value = true;
 };
