@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import { BookOpen, LayoutGrid } from 'lucide-vue-next';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { dashboard } from '@/routes';
 import admin from '@/routes/admin';
-import { BookOpen, Users, LayoutGrid, Clock } from 'lucide-vue-next';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 defineOptions({
     layout: {

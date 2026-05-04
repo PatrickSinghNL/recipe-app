@@ -16,7 +16,7 @@ import { useAppearance } from '@/composables/useAppearance';
 import { home, login, dashboard } from '@/routes';
 import recipes from '@/routes/recipes';
 
-const { appearance, updateAppearance } = useAppearance();
+const { updateAppearance } = useAppearance();
 
 const page = usePage();
 const search = ref((page.props.filters as any)?.search || '');

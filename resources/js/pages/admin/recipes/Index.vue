@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Plus, Pencil, Trash2, Eye } from 'lucide-vue-next';
 import { ref } from 'vue';
+import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/AppLayout.vue';
 import admin from '@/routes/admin';
 import recipesRoutes from '@/routes/recipes';
-import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue';
 
 defineProps<{
     recipes: any[];

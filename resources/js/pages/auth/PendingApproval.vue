@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
-import AuthLayout from '@/layouts/AuthLayout.vue';
-import { Button } from '@/components/ui/button';
+import { Head, router } from '@inertiajs/vue3';
 import { Clock } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
+import AuthLayout from '@/layouts/AuthLayout.vue';
 
 import { logout as logoutRoute } from '@/routes';
 

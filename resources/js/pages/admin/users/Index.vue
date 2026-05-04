@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Shield, Trash2 } from 'lucide-vue-next';
 import { ref } from 'vue';
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/AppLayout.vue';
 import admin from '@/routes/admin';
 
 defineProps<{

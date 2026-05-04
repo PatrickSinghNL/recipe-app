@@ -19,7 +19,9 @@ class EnsureUserIsApproved
     {
         if (Auth::check() && !Auth::user()->is_approved) {
             // If they are on the pending page, let them through
-            if ($request->routeIs('auth.pending')) {
+            if ($request->routeIs('auth.pending') ||
+                $request->routeIs('logout') ||
+                $request->routeIs('verification.*')) {
                 return $next($request);
             }
 

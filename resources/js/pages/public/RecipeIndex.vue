@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import PublicLayout from '@/layouts/PublicLayout.vue';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Clock, Users, Heart } from 'lucide-vue-next';
-import { useFavoritesStore } from '@/stores/useFavoritesStore';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import PublicLayout from '@/layouts/PublicLayout.vue';
 import recipesRoutes from '@/routes/recipes';
+import { useFavoritesStore } from '@/stores/useFavoritesStore';
 
 defineProps<{
     recipes: any[];
@@ -17,9 +17,13 @@ defineProps<{
 const favorites = useFavoritesStore();
 
 const formatTime = (minutes: number) => {
-    if (minutes < 60) return `${minutes}m`;
+    if (minutes < 60) {
+return `${minutes}m`;
+}
+
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
+
     return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
 };
 </script>
