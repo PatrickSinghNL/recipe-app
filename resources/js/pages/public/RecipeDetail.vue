@@ -78,7 +78,7 @@ return `${minutes}m`;
                             </Badge>
                         </div>
                         <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl leading-tight text-foreground">{{ recipe.name }}</h1>
-                        <p class="text-lg leading-relaxed text-muted-foreground">{{ recipe.description }}</p>
+                        <p class="text-lg leading-relaxed text-muted-foreground whitespace-pre-line">{{ recipe.description }}</p>
                     </div>
 
                     <Separator />
