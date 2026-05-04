@@ -15,6 +15,12 @@ defineOptions({
         ],
     },
 });
+
+defineProps<{
+    stats: {
+        total_recipes: number;
+    };
+}>();
 </script>
 
 <template>
@@ -30,7 +36,7 @@ defineOptions({
                     <BookOpen class="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div class="text-2xl font-bold">1</div>
+                    <div class="text-2xl font-bold">{{ stats.total_recipes }}</div>
                     <p class="text-xs text-muted-foreground">Manage your collection</p>
                 </CardContent>
             </Card>
