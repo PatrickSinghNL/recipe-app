@@ -2,8 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use App\Models\Ingredient;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Recipe;
+use App\Models\Supply;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,21 +16,23 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\User::factory()->create([
+        User::factory()->create([
             'name' => 'Admin User',
             'email' => 'admin@example.com',
             'password' => bcrypt('password'),
+            'is_approved' => 1,
+            'is_admin' => 1,
         ]);
 
-        $ingredient1 = \App\Models\Ingredient::create(['name' => 'Pasta', 'quantity' => '200g', 'price' => 1.50]);
-        $ingredient2 = \App\Models\Ingredient::create(['name' => 'Eggs', 'quantity' => '2 pieces', 'price' => 0.60]);
-        $ingredient3 = \App\Models\Ingredient::create(['name' => 'Pancetta', 'quantity' => '100g', 'price' => 3.00]);
-        $ingredient4 = \App\Models\Ingredient::create(['name' => 'Pecorino Romano', 'quantity' => '50g', 'price' => 2.00]);
+        $ingredient1 = Ingredient::create(['name' => 'Pasta', 'quantity' => '200g', 'price' => 1.50]);
+        $ingredient2 = Ingredient::create(['name' => 'Eggs', 'quantity' => '2 pieces', 'price' => 0.60]);
+        $ingredient3 = Ingredient::create(['name' => 'Pancetta', 'quantity' => '100g', 'price' => 3.00]);
+        $ingredient4 = Ingredient::create(['name' => 'Pecorino Romano', 'quantity' => '50g', 'price' => 2.00]);
 
-        $supply1 = \App\Models\Supply::create(['name' => 'Frying Pan']);
-        $supply2 = \App\Models\Supply::create(['name' => 'Pot']);
+        $supply1 = Supply::create(['name' => 'Frying Pan']);
+        $supply2 = Supply::create(['name' => 'Pot']);
 
-        $recipe = \App\Models\Recipe::create([
+        $recipe = Recipe::create([
             'name' => 'Authentic Carbonara',
             'description' => 'A classic Roman pasta dish made with eggs, cheese, pancetta, and black pepper.',
             'time' => 20,
@@ -38,7 +43,7 @@ class DatabaseSeeder extends Seeder
         $recipe->ingredients()->attach([$ingredient1->id, $ingredient2->id, $ingredient3->id, $ingredient4->id]);
         $recipe->supplies()->attach([$supply1->id, $supply2->id]);
 
-        $recipe2 = \App\Models\Recipe::create([
+        $recipe2 = Recipe::create([
             'name' => 'Italian Margherita Pizza',
             'description' => 'A simple yet delicious pizza with fresh tomatoes, mozzarella, and basil.',
             'time' => 45,
@@ -46,9 +51,9 @@ class DatabaseSeeder extends Seeder
             'is_published' => true,
         ]);
 
-        $ingredient5 = \App\Models\Ingredient::create(['name' => 'Pizza Dough', 'quantity' => '500g', 'price' => 2.00]);
-        $ingredient6 = \App\Models\Ingredient::create(['name' => 'Mozzarella', 'quantity' => '250g', 'price' => 3.50]);
-        $ingredient7 = \App\Models\Ingredient::create(['name' => 'Basil', 'quantity' => '1 bunch', 'price' => 1.00]);
+        $ingredient5 = Ingredient::create(['name' => 'Pizza Dough', 'quantity' => '500g', 'price' => 2.00]);
+        $ingredient6 = Ingredient::create(['name' => 'Mozzarella', 'quantity' => '250g', 'price' => 3.50]);
+        $ingredient7 = Ingredient::create(['name' => 'Basil', 'quantity' => '1 bunch', 'price' => 1.00]);
 
         $recipe2->ingredients()->attach([$ingredient5->id, $ingredient6->id, $ingredient7->id]);
         $recipe2->supplies()->attach([$supply2->id]);
