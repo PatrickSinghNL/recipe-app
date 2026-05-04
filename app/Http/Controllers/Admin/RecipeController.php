@@ -104,6 +104,8 @@ class RecipeController extends Controller
                 Storage::disk('public')->delete($recipe->image);
             }
             $validated['image'] = $request->file('image')->store('recipes', 'public');
+        } else {
+            unset($validated['image']);
         }
 
         $validated['is_published'] = $request->boolean('is_published');

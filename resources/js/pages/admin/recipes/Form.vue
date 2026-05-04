@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Save, Loader2 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -53,6 +53,18 @@ const selectedIngredientIds = computed({
         });
     }
 });
+
+const imagePreview = ref<string | null>(null);
+
+const handleImageChange = (event: any) => {
+    const file = event.target.files[0];
+    form.image = file;
+    if (file) {
+        imagePreview.value = URL.createObjectURL(file);
+    } else {
+        imagePreview.value = null;
+    }
+};
 
 const submit = () => {
     if (props.recipe) {
@@ -191,7 +203,12 @@ defineOptions({
                             <Label>Recipe Image</Label>
                             <div class="aspect-video w-full rounded-lg border-2 border-dashed flex items-center justify-center overflow-hidden bg-muted relative">
                                 <img
-                                    v-if="recipe?.image && !form.image"
+                                    v-if="imagePreview"
+                                    :src="imagePreview"
+                                    class="h-full w-full object-cover"
+                                />
+                                <img
+                                    v-else-if="recipe?.image"
                                     :src="`/storage/${recipe.image}`"
                                     class="h-full w-full object-cover"
                                 />
@@ -201,7 +218,7 @@ defineOptions({
                                 <Input
                                     type="file"
                                     class="absolute inset-0 opacity-0 cursor-pointer"
-                                    @input="form.image = $event.target.files[0]"
+                                    @change="handleImageChange"
                                 />
                             </div>
                             <p v-if="form.image" class="text-xs text-green-600 font-medium truncate">Selected: {{ form.image.name }}</p>

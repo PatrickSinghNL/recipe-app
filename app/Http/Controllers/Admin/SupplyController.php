@@ -45,6 +45,8 @@ class SupplyController extends Controller
                 Storage::disk('public')->delete($supply->image);
             }
             $validated['image'] = $request->file('image')->store('supplies', 'public');
+        } else {
+            unset($validated['image']);
         }
 
         $supply->update($validated);

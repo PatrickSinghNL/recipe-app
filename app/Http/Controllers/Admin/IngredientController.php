@@ -49,6 +49,8 @@ class IngredientController extends Controller
                 Storage::disk('public')->delete($ingredient->image);
             }
             $validated['image'] = $request->file('image')->store('ingredients', 'public');
+        } else {
+            unset($validated['image']);
         }
 
         $ingredient->update($validated);

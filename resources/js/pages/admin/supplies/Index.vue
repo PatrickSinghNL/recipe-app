@@ -28,9 +28,22 @@ const form = useForm({
     image: null as File | null,
 });
 
+const imagePreview = ref<string | null>(null);
+
+const handleImageChange = (event: any) => {
+    const file = event.target.files[0];
+    form.image = file;
+    if (file) {
+        imagePreview.value = URL.createObjectURL(file);
+    } else {
+        imagePreview.value = null;
+    }
+};
+
 const openCreate = () => {
     editingSupply.value = null;
     form.reset();
+    imagePreview.value = null;
     isDialogOpen.value = true;
 };
 
@@ -38,6 +51,7 @@ const openEdit = (supply: any) => {
     editingSupply.value = supply;
     form.name = supply.name;
     form.image = null;
+    imagePreview.value = null;
     isDialogOpen.value = true;
 };
 
@@ -147,7 +161,19 @@ defineOptions({
                     </div>
                     <div class="space-y-2">
                         <Label>Image</Label>
-                        <Input type="file" @input="form.image = $event.target.files[0]" />
+                        <div v-if="imagePreview || (editingSupply && editingSupply.image)" class="mb-2">
+                            <img 
+                                v-if="imagePreview"
+                                :src="imagePreview" 
+                                class="h-20 w-20 rounded object-cover border" 
+                            />
+                            <img 
+                                v-else-if="editingSupply && editingSupply.image"
+                                :src="`/storage/${editingSupply.image}`" 
+                                class="h-20 w-20 rounded object-cover border" 
+                            />
+                        </div>
+                        <Input type="file" @change="handleImageChange" />
                     </div>
                 </form>
                 <DialogFooter>
