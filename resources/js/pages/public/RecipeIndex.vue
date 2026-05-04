@@ -34,13 +34,13 @@ return `${minutes}m`;
     <PublicLayout>
         <div class="space-y-12">
             <!-- Hero Section -->
-            <section class="relative overflow-hidden rounded-3xl bg-primary px-6 py-16 text-primary-foreground sm:px-12 sm:py-24">
+            <section class="relative overflow-hidden rounded-3xl bg-primary px-6 py-8 text-primary-foreground sm:px-12 sm:py-12">
                 <div class="relative z-10 mx-auto max-w-2xl text-center">
-                    <h1 class="text-4xl font-extrabold tracking-tight sm:text-6xl">
+                    <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">
                         Discover Your Next <span class="text-white">Culinary Masterpiece</span>
                     </h1>
-                    <p class="mt-6 text-lg leading-8 opacity-90">
-                        Explore hundreds of hand-picked recipes from around the world. Simple, healthy, and delicious meals at your fingertips.
+                    <p class="mt-4 text-base leading-7 opacity-90">
+                        Explore hundreds of hand-picked recipes from around the world.
                     </p>
                 </div>
                 <!-- Decorative background blob -->
