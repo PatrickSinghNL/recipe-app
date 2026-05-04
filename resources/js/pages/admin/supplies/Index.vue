@@ -120,10 +120,10 @@ defineOptions({
                         <td class="p-4 text-right">
                             <div class="flex justify-end gap-2">
                                 <Button variant="ghost" size="icon" @click="openEdit(supply)">
-                                    <Pencil class="h-4 w-4" />
+                                    <Pencil class="h-4 w-4 cursor-pointer" />
                                 </Button>
                                 <Button variant="ghost" size="icon" @click="confirmDelete(supply.id)">
-                                    <Trash2 class="h-4 w-4 text-destructive" />
+                                    <Trash2 class="h-4 w-4 text-destructive cursor-pointer" />
                                 </Button>
                             </div>
                         </td>

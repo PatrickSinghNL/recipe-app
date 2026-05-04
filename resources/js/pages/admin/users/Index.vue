@@ -89,7 +89,7 @@ defineOptions({
                                         size="sm" 
                                         @click="approveUser(user.id)"
                                     >
-                                        <CheckCircle class="mr-2 h-4 w-4" /> Approve
+                                        <CheckCircle class="mr-2 h-4 w-4 cursor-pointer" /> Approve
                                     </Button>
                                     <Button 
                                         variant="ghost" 
@@ -97,7 +97,7 @@ defineOptions({
                                         @click="toggleAdmin(user.id)"
                                         :disabled="user.id === $page.props.auth.user.id"
                                     >
-                                        <Shield class="mr-2 h-4 w-4" /> {{ user.is_admin ? 'Demote' : 'Make Admin' }}
+                                        <Shield class="mr-2 h-4 w-4 cursor-pointer" /> {{ user.is_admin ? 'Demote' : 'Make Admin' }}
                                     </Button>
                                     <Button 
                                         variant="ghost" 
@@ -105,7 +105,7 @@ defineOptions({
                                         @click="confirmDelete(user.id)"
                                         :disabled="user.id === $page.props.auth.user.id"
                                     >
-                                        <Trash2 class="h-4 w-4 text-destructive" />
+                                        <Trash2 class="mr-2 h-4 w-4 text-destructive cursor-pointer" />
                                     </Button>
                                 </div>
                             </td>

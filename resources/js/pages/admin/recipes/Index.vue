@@ -98,16 +98,16 @@ defineOptions({
                                 <div class="flex justify-end gap-2">
                                     <Link :href="recipesRoutes.show.url(recipe.id)" target="_blank">
                                         <Button variant="ghost" size="icon">
-                                            <Eye class="h-4 w-4" />
+                                            <Eye class="h-4 w-4 cursor-pointer" />
                                         </Button>
                                     </Link>
                                     <Link :href="admin.recipes.edit.url(recipe.id)">
                                         <Button variant="ghost" size="icon">
-                                            <Pencil class="h-4 w-4" />
+                                            <Pencil class="h-4 w-4 cursor-pointer" />
                                         </Button>
                                     </Link>
                                     <Button variant="ghost" size="icon" @click="confirmDelete(recipe.id)">
-                                        <Trash2 class="h-4 w-4 text-destructive" />
+                                        <Trash2 class="h-4 w-4 text-destructive cursor-pointer" />
                                     </Button>
                                 </div>
                             </td>
