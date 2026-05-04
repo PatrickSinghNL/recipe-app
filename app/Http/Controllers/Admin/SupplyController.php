@@ -13,7 +13,7 @@ class SupplyController extends Controller
     public function index()
     {
         return Inertia::render('admin/supplies/Index', [
-            'supplies' => Supply::latest()->get(),
+            'supplies' => Supply::orderBy('name', 'asc')->get(),
         ]);
     }
 

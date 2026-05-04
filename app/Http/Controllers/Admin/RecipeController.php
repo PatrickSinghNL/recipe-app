@@ -16,7 +16,7 @@ class RecipeController extends Controller
     public function index()
     {
         return Inertia::render('admin/recipes/Index', [
-            'recipes' => Recipe::with('categories')->latest()->get(),
+            'recipes' => Recipe::with('categories')->orderBy('name', 'asc')->get(),
         ]);
     }
 

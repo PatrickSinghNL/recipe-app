@@ -13,7 +13,7 @@ class IngredientController extends Controller
     public function index()
     {
         return Inertia::render('admin/ingredients/Index', [
-            'ingredients' => Ingredient::latest()->get(),
+            'ingredients' => Ingredient::orderBy('name', 'asc')->get(),
         ]);
     }
 

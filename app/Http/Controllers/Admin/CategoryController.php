@@ -13,7 +13,7 @@ class CategoryController extends Controller
     public function index()
     {
         return Inertia::render('admin/categories/Index', [
-            'categories' => Category::latest()->get(),
+            'categories' => Category::orderBy('name', 'asc')->get(),
         ]);
     }
 
