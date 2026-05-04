@@ -118,37 +118,39 @@ defineOptions({
         </div>
 
         <div class="rounded-md border bg-card">
-            <table class="w-full text-sm">
-                <thead class="border-b">
-                    <tr>
-                        <th class="h-12 px-4 text-left font-medium text-muted-foreground w-[80px]">Image</th>
-                        <th class="h-12 px-4 text-left font-medium text-muted-foreground">Name</th>
-                        <th class="h-12 px-4 text-right font-medium text-muted-foreground">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="supply in supplies" :key="supply.id" class="border-b transition-colors hover:bg-muted/50">
-                        <td class="p-4">
-                            <img v-if="supply.image" :src="`/storage/${supply.image}`" class="h-10 w-10 rounded object-cover" />
-                            <div v-else class="h-10 w-10 rounded bg-muted flex items-center justify-center text-[8px]">No Image</div>
-                        </td>
-                        <td class="p-4 font-medium">{{ supply.name }}</td>
-                        <td class="p-4 text-right">
-                            <div class="flex justify-end gap-2">
-                                <Button variant="ghost" size="icon" @click="openEdit(supply)">
-                                    <Pencil class="h-4 w-4 cursor-pointer" />
-                                </Button>
-                                <Button variant="ghost" size="icon" @click="confirmDelete(supply.id)">
-                                    <Trash2 class="h-4 w-4 text-destructive cursor-pointer" />
-                                </Button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr v-if="supplies.length === 0">
-                        <td colspan="3" class="p-8 text-center text-muted-foreground">No supplies found.</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="relative w-full overflow-auto">
+                <table class="w-full text-sm">
+                    <thead class="border-b">
+                        <tr>
+                            <th class="h-12 px-4 text-left font-medium text-muted-foreground w-[80px]">Image</th>
+                            <th class="h-12 px-4 text-left font-medium text-muted-foreground">Name</th>
+                            <th class="h-12 px-4 text-right font-medium text-muted-foreground">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="supply in supplies" :key="supply.id" class="border-b transition-colors hover:bg-muted/50">
+                            <td class="p-4">
+                                <img v-if="supply.image" :src="`/storage/${supply.image}`" class="h-10 w-10 rounded object-cover" />
+                                <div v-else class="h-10 w-10 rounded bg-muted flex items-center justify-center text-[8px]">No Image</div>
+                            </td>
+                            <td class="p-4 font-medium">{{ supply.name }}</td>
+                            <td class="p-4 text-right">
+                                <div class="flex justify-end gap-2">
+                                    <Button variant="ghost" size="icon" @click="openEdit(supply)">
+                                        <Pencil class="h-4 w-4 cursor-pointer" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" @click="confirmDelete(supply.id)">
+                                        <Trash2 class="h-4 w-4 text-destructive cursor-pointer" />
+                                    </Button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr v-if="supplies.length === 0">
+                            <td colspan="3" class="p-8 text-center text-muted-foreground">No supplies found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <Dialog v-model:open="isDialogOpen">
