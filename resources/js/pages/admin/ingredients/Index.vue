@@ -13,6 +13,7 @@ import {
     DialogTitle,
     DialogFooter,
 } from '@/components/ui/dialog';
+import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue';
 import admin from '@/routes/admin';
 
 const props = defineProps<{
@@ -64,10 +65,22 @@ const submit = () => {
     }
 };
 
-const deleteIngredient = (id: number) => {
-    if (confirm('Are you sure?')) {
-        router.delete(admin.ingredients.destroy.url(id));
-    }
+const deleteId = ref<number | null>(null);
+const deleteLoading = ref(false);
+
+const confirmDelete = (id: number) => {
+    deleteId.value = id;
+};
+
+const handleDelete = () => {
+    if (!deleteId.value) return;
+    deleteLoading.value = true;
+    router.delete(admin.ingredients.destroy.url(deleteId.value), {
+        onFinish: () => {
+            deleteLoading.value = false;
+            deleteId.value = null;
+        },
+    });
 };
 
 defineOptions({
@@ -114,7 +127,7 @@ defineOptions({
                                 <Button variant="ghost" size="icon" @click="openEdit(ingredient)">
                                     <Pencil class="h-4 w-4" />
                                 </Button>
-                                <Button variant="ghost" size="icon" @click="deleteIngredient(ingredient.id)">
+                                <Button variant="ghost" size="icon" @click="confirmDelete(ingredient.id)">
                                     <Trash2 class="h-4 w-4 text-destructive" />
                                 </Button>
                             </div>
@@ -158,5 +171,14 @@ defineOptions({
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+
+        <DeleteConfirmModal
+            :open="deleteId !== null"
+            title="Delete Ingredient"
+            description="Are you sure you want to delete this ingredient? This action cannot be undone."
+            :loading="deleteLoading"
+            @update:open="(v) => { if (!v) deleteId = null; }"
+            @confirm="handleDelete"
+        />
     </div>
 </template>

@@ -1,0 +1,73 @@
+{
+    "version": "1.2.0",
+    "configurations": [
+    
+        {
+            "command": "./vendor/bin/sail build && ./vendor/bin/sail up -d && ./vendor/bin/sail shell && ./vendor/bin/sail down && exit",
+            "name": "sail up",
+            "request": "launch",
+            "type": "node-terminal"
+        },
+        {
+            "command": "./vendor/bin/sail down",
+            "name": "sail down",
+            "request": "launch",
+            "type": "node-terminal"
+        },
+        {
+            "command": "npm run dev",
+            "name": "npm run dev",
+            "request": "launch",
+            "type": "node-terminal"
+        },
+        {
+            "name": "Listen for XDebug on Docker App",
+            "type": "php",
+            "request": "launch",
+            "port": 9003,
+            "pathMappings": {
+                "/var/www/html": "${workspaceFolder}"
+            },
+            "hostname": "0.0.0.0",
+            "xdebugSettings": {
+                "max_data": 65535,
+                "show_hidden": 1,
+                "max_children": 100,
+                "max_depth": 5
+            }
+        },
+        {
+            "command": "./vendor/bin/pint --test",
+            "name": "pint test",
+            "request": "launch",
+            "type": "node-terminal"
+        },
+        {
+            "command": "./vendor/bin/pint",
+            "name": "pint correct",
+            "request": "launch",
+            "type": "node-terminal"
+        },
+        {
+            "command": "npm run lint",
+            "name": "eslint",
+            "request": "launch",
+            "type": "node-terminal"
+        },
+        {
+            "command": "npm run lint:fix",
+            "name": "eslint fix",
+            "request": "launch",
+            "type": "node-terminal"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Debug Vue (Chrome)",
+            "url": "http://localhost",
+            "webRoot": "${workspaceFolder}",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceFolder}/.vscode/chrome-debug"
+        }
+    ]
+}

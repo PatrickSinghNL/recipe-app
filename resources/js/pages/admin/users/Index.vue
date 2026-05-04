@@ -4,6 +4,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, Shield, Trash2, User } from 'lucide-vue-next';
+import { ref } from 'vue';
+import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue';
 import admin from '@/routes/admin';
 
 defineProps<{
@@ -18,10 +20,22 @@ const toggleAdmin = (id: number) => {
     router.post(admin.users.toggleAdmin.url(id));
 };
 
-const deleteUser = (id: number) => {
-    if (confirm('Are you sure you want to delete this user?')) {
-        router.delete(admin.users.destroy.url(id));
-    }
+const deleteId = ref<number | null>(null);
+const deleteLoading = ref(false);
+
+const confirmDelete = (id: number) => {
+    deleteId.value = id;
+};
+
+const handleDelete = () => {
+    if (!deleteId.value) return;
+    deleteLoading.value = true;
+    router.delete(admin.users.destroy.url(deleteId.value), {
+        onFinish: () => {
+            deleteLoading.value = false;
+            deleteId.value = null;
+        },
+    });
 };
 
 defineOptions({
@@ -85,7 +99,7 @@ defineOptions({
                                     <Button 
                                         variant="ghost" 
                                         size="sm" 
-                                        @click="deleteUser(user.id)"
+                                        @click="confirmDelete(user.id)"
                                         :disabled="user.id === $page.props.auth.user.id"
                                     >
                                         <Trash2 class="h-4 w-4 text-destructive" />
@@ -98,4 +112,13 @@ defineOptions({
             </div>
         </div>
     </div>
+
+    <DeleteConfirmModal
+        :open="deleteId !== null"
+        title="Delete User"
+        description="Are you sure you want to permanently delete this user account? This action cannot be undone."
+        :loading="deleteLoading"
+        @update:open="(v) => { if (!v) deleteId = null; }"
+        @confirm="handleDelete"
+    />
 </template>
