@@ -15,17 +15,17 @@ class Recipe extends Model
         'is_published',
     ];
 
-    public function ingredients()
+    public function ingredients(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Ingredient::class)->withPivot('quantity');
     }
 
-    public function supplies()
+    public function supplies(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Supply::class);
     }
 
-    public function categories()
+    public function categories(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Category::class);
     }
