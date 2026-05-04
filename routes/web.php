@@ -8,11 +8,8 @@ use App\Http\Controllers\Admin\CategoryController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
-Route::get('/', function () {
-    return redirect()->route('recipes.index');
-})->name('home');
-
-Route::get('/recipes', [RecipeController::class, 'index'])->name('recipes.index');
+Route::get('/', [RecipeController::class, 'index'])->name('recipes.index');
+Route::get('/recipes', fn () => redirect('/'))->name('home');
 Route::get('/recipes/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
 
 Route::middleware(['auth', 'verified', \App\Http\Middleware\EnsureUserIsAdmin::class])->group(function () {
