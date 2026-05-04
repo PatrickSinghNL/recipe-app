@@ -1,4 +1,4 @@
-name: Deploy Project to Development
+name: Deploy Project to Main
 
 on:
   push:
@@ -16,6 +16,12 @@ jobs:
     - name: Install Composer Dependencies
       run: composer install --no-interaction --prefer-dist --no-progress --optimize-autoloader
 
+    - name: Install NPM Dependencies
+      run: npm install
+
+    - name: Build NPM Assets
+      run: npm run build
+
     - name: Prepare Laravel Application
       run: cp .env.testing .env
 
@@ -27,12 +33,6 @@ jobs:
 
     - name: PHPStan
       run: ./vendor/bin/phpstan analyse --memory-limit 512M --configuration=phpstan.neon
-
-    - name: Install NPM Dependencies
-      run: npm install
-
-    - name: Build NPM Assets
-      run: npm run build
 
     - name: Deploy Files Locally
       run: |
