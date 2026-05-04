@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Recipe extends Model
 {
@@ -15,17 +16,17 @@ class Recipe extends Model
         'is_published',
     ];
 
-    public function ingredients(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function ingredients(): BelongsToMany
     {
         return $this->belongsToMany(Ingredient::class)->withPivot('quantity');
     }
 
-    public function supplies(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function supplies(): BelongsToMany
     {
         return $this->belongsToMany(Supply::class);
     }
 
-    public function categories(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function categories(): BelongsToMany
     {
         return $this->belongsToMany(Category::class);
     }

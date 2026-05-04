@@ -61,6 +61,12 @@
             "type": "node-terminal"
         },
         {
+            "command": "./vendor/bin/phpstan analyse --memory-limit 512M --configuration=phpstan.neon",
+            "name": "phpstan",
+            "request": "launch",
+            "type": "node-terminal"
+        },
+        {
             "type": "chrome",
             "request": "launch",
             "name": "Debug Vue (Chrome)",
