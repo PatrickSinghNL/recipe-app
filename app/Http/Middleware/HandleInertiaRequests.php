@@ -48,6 +48,8 @@ class HandleInertiaRequests extends Middleware
             ],
             'settings' => [
                 'registration_enabled' => Setting::isEnabled('registration_enabled'),
+                'currency_name' => Setting::get('currency_name', 'Euro'),
+                'currency_symbol' => Setting::get('currency_symbol', '€'),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

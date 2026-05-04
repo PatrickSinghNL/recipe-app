@@ -124,7 +124,7 @@ defineOptions({
                         </td>
                         <td class="p-4 font-medium">{{ ingredient.name }}</td>
                         <td class="p-4 text-muted-foreground">{{ ingredient.quantity || '-' }}</td>
-                        <td class="p-4 text-muted-foreground">{{ ingredient.price ? '$' + ingredient.price : '-' }}</td>
+                        <td class="p-4 text-muted-foreground">{{ ingredient.price ? $page.props.settings.currency_symbol + ingredient.price : '-' }}</td>
                         <td class="p-4 text-right">
                             <div class="flex justify-end gap-2">
                                 <Button variant="ghost" size="icon" @click="openEdit(ingredient)">
