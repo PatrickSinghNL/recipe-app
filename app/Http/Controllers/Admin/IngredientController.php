@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ingredient;
+use App\Models\Store;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -13,7 +14,8 @@ class IngredientController extends Controller
     public function index()
     {
         return Inertia::render('admin/ingredients/Index', [
-            'ingredients' => Ingredient::orderBy('name', 'asc')->get(),
+            'ingredients' => Ingredient::with('store')->orderBy('name', 'asc')->get(),
+            'stores' => Store::orderBy('name', 'asc')->get(),
         ]);
     }
 
@@ -24,6 +26,7 @@ class IngredientController extends Controller
             'quantity' => 'nullable|string',
             'price' => 'nullable|numeric',
             'image' => 'nullable|image|max:2048',
+            'store_id' => 'nullable|exists:stores,id',
         ]);
 
         if ($request->hasFile('image')) {
@@ -42,6 +45,7 @@ class IngredientController extends Controller
             'quantity' => 'nullable|string',
             'price' => 'nullable|numeric',
             'image' => 'nullable|image|max:2048',
+            'store_id' => 'nullable|exists:stores,id',
         ]);
 
         if ($request->hasFile('image')) {

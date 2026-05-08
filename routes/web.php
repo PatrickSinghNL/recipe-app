@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\IngredientController;
 use App\Http\Controllers\Admin\RecipeController as AdminRecipeController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\StoreController;
 use App\Http\Controllers\Admin\SupplyController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\RecipeController;
@@ -23,6 +24,7 @@ Route::middleware(['auth', 'verified', EnsureUserIsAdmin::class])->group(functio
         Route::resource('ingredients', IngredientController::class);
         Route::resource('supplies', SupplyController::class);
         Route::resource('categories', CategoryController::class);
+        Route::resource('stores', StoreController::class);
 
         // User Management
         Route::get('users', [UserController::class, 'index'])->name('users.index');

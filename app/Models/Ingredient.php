@@ -11,7 +11,13 @@ class Ingredient extends Model
         'quantity',
         'price',
         'image',
+        'store_id',
     ];
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
+    }
 
     public function recipes()
     {

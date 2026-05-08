@@ -13,11 +13,19 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import admin from '@/routes/admin';
 
 defineProps<{
     ingredients: any[];
+    stores: any[];
 }>();
 
 const isDialogOpen = ref(false);
@@ -28,6 +36,7 @@ const form = useForm({
     quantity: '',
     price: '',
     image: null as File | null,
+    store_id: '' as string | number,
 });
 
 const imagePreview = ref<string | null>(null);
@@ -47,6 +56,7 @@ const openCreate = () => {
     form.name = '';
     form.quantity = '';
     form.price = '';
+    form.store_id = 'none';
     form.image = null;
     form.clearErrors();
     imagePreview.value = null;
@@ -58,29 +68,25 @@ const openEdit = (ingredient: any) => {
     form.name = ingredient.name;
     form.quantity = ingredient.quantity ?? '';
     form.price = ingredient.price ?? '';
+    form.store_id = ingredient.store_id ? ingredient.store_id.toString() : 'none';
     form.image = null;
     imagePreview.value = null;
     isDialogOpen.value = true;
 };
 
 const submit = () => {
-    if (editingIngredient.value) {
-        form.transform((data) => ({
-            ...data,
-            _method: 'PUT',
-        })).post(admin.ingredients.update.url(editingIngredient.value.id), {
-            onSuccess: () => {
-                isDialogOpen.value = false;
-            },
-        });
-    } else {
-        form.post(admin.ingredients.store.url(), {
-            onSuccess: () => {
-                isDialogOpen.value = false;
+    form.transform((data) => ({
+        ...data,
+        _method: editingIngredient.value ? 'PUT' : undefined,
+        store_id: data.store_id === 'none' || data.store_id === '' ? null : data.store_id,
+    })).post(editingIngredient.value ? admin.ingredients.update.url(editingIngredient.value.id) : admin.ingredients.store.url(), {
+        onSuccess: () => {
+            isDialogOpen.value = false;
+            if (!editingIngredient.value) {
                 form.reset();
-            },
-        });
-    }
+            }
+        },
+    });
 };
 
 const deleteId = ref<number | null>(null);
@@ -130,6 +136,7 @@ defineOptions({
                         <tr>
                             <th class="h-12 px-4 text-left font-medium text-muted-foreground w-[80px]">Image</th>
                             <th class="h-12 px-4 text-left font-medium text-muted-foreground">Name</th>
+                            <th class="h-12 px-4 text-left font-medium text-muted-foreground">Store</th>
                             <th class="h-12 px-4 text-left font-medium text-muted-foreground">Quantity (default)</th>
                             <th class="h-12 px-4 text-left font-medium text-muted-foreground">Price</th>
                             <th class="h-12 px-4 text-right font-medium text-muted-foreground">Actions</th>
@@ -142,6 +149,13 @@ defineOptions({
                                 <div v-else class="h-10 w-10 rounded bg-muted flex items-center justify-center text-[8px]">No Image</div>
                             </td>
                             <td class="p-4 font-medium">{{ ingredient.name }}</td>
+                            <td class="p-4 text-muted-foreground">
+                                <div v-if="ingredient.store" class="flex items-center gap-2">
+                                    <img v-if="ingredient.store.image" :src="`/storage/${ingredient.store.image}`" class="h-5 w-5 rounded object-cover" />
+                                    <span>{{ ingredient.store.name }}</span>
+                                </div>
+                                <span v-else>-</span>
+                            </td>
                             <td class="p-4 text-muted-foreground">{{ ingredient.quantity || '-' }}</td>
                             <td class="p-4 text-muted-foreground">{{ ingredient.price ? $page.props.settings.currency_symbol + ingredient.price : '-' }}</td>
                             <td class="p-4 text-right">
@@ -156,7 +170,7 @@ defineOptions({
                             </td>
                         </tr>
                         <tr v-if="ingredients.length === 0">
-                            <td colspan="5" class="p-8 text-center text-muted-foreground">No ingredients found.</td>
+                            <td colspan="6" class="p-8 text-center text-muted-foreground">No ingredients found.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -180,6 +194,21 @@ defineOptions({
                     <div class="space-y-2">
                         <Label for="ing-price">Price</Label>
                         <Input id="ing-price" type="number" step="0.01" v-model="form.price" />
+                    </div>
+                    <div class="space-y-2">
+                        <Label>Store</Label>
+                        <Select v-model="form.store_id">
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a store" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">None</SelectItem>
+                                <SelectItem v-for="store in stores" :key="store.id" :value="store.id.toString()">
+                                    {{ store.name }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <p v-if="form.errors.store_id" class="text-sm text-destructive">{{ form.errors.store_id }}</p>
                     </div>
                     <div class="space-y-2">
                         <Label>Image</Label>

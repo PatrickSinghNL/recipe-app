@@ -54,6 +54,10 @@ const mainNavItems: NavItem[] = [
                 href: admin.settings.index.url(),
             },
             {
+                title: 'Stores',
+                href: admin.stores.index.url(),
+            },
+            {
                 title: 'User Management',
                 href: admin.users.index.url(),
             },
