@@ -31,8 +31,12 @@ const form = useForm({
         id: i.id,
         name: i.name,
         quantity: i.pivot?.quantity ?? ''
-    })) ?? [] as { id: number; name: string; quantity: string }[],
-    supplies: props.recipe?.supplies.map((s: any) => s.id) ?? [],
+    })).sort((a: any, b: any) => a.name.localeCompare(b.name)) ?? [] as { id: number; name: string; quantity: string }[],
+    supplies: props.recipe?.supplies.map((s: any) => s.id).sort((a: number, b: number) => {
+        const nameA = props.supplies.find(s => s.id === a)?.name ?? '';
+        const nameB = props.supplies.find(s => s.id === b)?.name ?? '';
+        return nameA.localeCompare(nameB);
+    }) ?? [],
 });
 
 const selectedIngredientIds = computed({
@@ -51,6 +55,8 @@ const selectedIngredientIds = computed({
                 });
             }
         });
+        // Sort ingredients by name
+        form.ingredients.sort((a: any, b: any) => a.name.localeCompare(b.name));
     }
 });
 

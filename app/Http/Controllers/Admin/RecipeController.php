@@ -23,9 +23,9 @@ class RecipeController extends Controller
     public function create()
     {
         return Inertia::render('admin/recipes/Form', [
-            'ingredients' => Ingredient::all(),
-            'supplies' => Supply::all(),
-            'categories' => Category::all(),
+            'ingredients' => Ingredient::orderBy('name', 'asc')->get(),
+            'supplies' => Supply::orderBy('name', 'asc')->get(),
+            'categories' => Category::orderBy('name', 'asc')->get(),
         ]);
     }
 
@@ -75,10 +75,14 @@ class RecipeController extends Controller
     public function edit(Recipe $recipe)
     {
         return Inertia::render('admin/recipes/Form', [
-            'recipe' => $recipe->load(['ingredients', 'supplies', 'categories']),
-            'ingredients' => Ingredient::all(),
-            'supplies' => Supply::all(),
-            'categories' => Category::all(),
+            'recipe' => $recipe->load([
+                'ingredients' => fn($query) => $query->orderBy('name', 'asc'),
+                'supplies' => fn($query) => $query->orderBy('name', 'asc'),
+                'categories' => fn($query) => $query->orderBy('name', 'asc')
+            ]),
+            'ingredients' => Ingredient::orderBy('name', 'asc')->get(),
+            'supplies' => Supply::orderBy('name', 'asc')->get(),
+            'categories' => Category::orderBy('name', 'asc')->get(),
         ]);
     }
 
