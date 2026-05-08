@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, useForm, router } from '@inertiajs/vue3';
-import { Plus, Pencil, Trash2 } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-vue-next';
+import { ref, computed, watch } from 'vue';
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,7 +23,7 @@ import {
 import AppLayout from '@/layouts/AppLayout.vue';
 import admin from '@/routes/admin';
 
-defineProps<{
+const props = defineProps<{
     ingredients: any[];
     stores: any[];
 }>();
@@ -110,6 +110,32 @@ const handleDelete = () => {
     });
 };
 
+// Filtering & Pagination
+const search = ref('');
+const activeStoreId = ref<number | null>(null);
+const currentPage = ref(1);
+const pageSize = 10;
+
+const filteredIngredients = computed(() => {
+    return props.ingredients.filter(ingredient => {
+        const matchesSearch = ingredient.name.toLowerCase().includes(search.value.toLowerCase());
+        const matchesStore = activeStoreId.value === null || ingredient.store_id === activeStoreId.value;
+        return matchesSearch && matchesStore;
+    });
+});
+
+const totalPages = computed(() => Math.ceil(filteredIngredients.value.length / pageSize));
+
+const paginatedIngredients = computed(() => {
+    const start = (currentPage.value - 1) * pageSize;
+    const end = start + pageSize;
+    return filteredIngredients.value.slice(start, end);
+});
+
+watch([search, activeStoreId], () => {
+    currentPage.value = 1;
+});
+
 defineOptions({
     layout: AppLayout,
 });
@@ -124,8 +150,46 @@ defineOptions({
                 <h1 class="text-2xl font-bold tracking-tight">Ingredients</h1>
                 <p class="text-muted-foreground">Manage global list of ingredients.</p>
             </div>
-            <Button @click="openCreate">
-                <Plus class="mr-2 h-4 w-4" /> Add Ingredient
+            <div class="flex gap-2">
+                <div class="relative w-64">
+                    <Search class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        v-model="search"
+                        placeholder="Search ingredients..."
+                        class="pl-9"
+                    />
+                </div>
+                <Button @click="openCreate">
+                    <Plus class="mr-2 h-4 w-4" /> Add Ingredient
+                </Button>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-hide">
+            <Button
+                variant="ghost"
+                size="sm"
+                :class="[
+                    'rounded-full px-4 h-8 transition-all',
+                    activeStoreId === null ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'hover:bg-muted'
+                ]"
+                @click="activeStoreId = null"
+            >
+                All
+            </Button>
+            <Button
+                v-for="store in stores"
+                :key="store.id"
+                variant="ghost"
+                size="sm"
+                :class="[
+                    'rounded-full px-4 h-8 flex items-center gap-2 transition-all',
+                    activeStoreId === store.id ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'hover:bg-muted'
+                ]"
+                @click="activeStoreId = store.id"
+            >
+                <img v-if="store.image" :src="`/storage/${store.image}`" class="h-4 w-4 rounded-full object-cover" />
+                {{ store.name }}
             </Button>
         </div>
 
@@ -143,7 +207,7 @@ defineOptions({
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="ingredient in ingredients" :key="ingredient.id" class="border-b transition-colors hover:bg-muted/50">
+                        <tr v-for="ingredient in paginatedIngredients" :key="ingredient.id" class="border-b transition-colors hover:bg-muted/50">
                             <td class="p-4">
                                 <img v-if="ingredient.image" :src="`/storage/${ingredient.image}`" class="h-10 w-10 rounded object-cover" />
                                 <div v-else class="h-10 w-10 rounded bg-muted flex items-center justify-center text-[8px]">No Image</div>
@@ -169,11 +233,47 @@ defineOptions({
                                 </div>
                             </td>
                         </tr>
-                        <tr v-if="ingredients.length === 0">
+                        <tr v-if="paginatedIngredients.length === 0">
                             <td colspan="6" class="p-8 text-center text-muted-foreground">No ingredients found.</td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <div v-if="totalPages > 1" class="flex items-center justify-between px-2">
+            <div class="text-sm text-muted-foreground">
+                Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, filteredIngredients.length) }} of {{ filteredIngredients.length }} ingredients
+            </div>
+            <div class="flex items-center space-x-2">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    :disabled="currentPage === 1"
+                    @click="currentPage--"
+                >
+                    <ChevronLeft class="h-4 w-4 mr-1" /> Previous
+                </Button>
+                <div class="flex items-center gap-1">
+                    <Button
+                        v-for="page in totalPages"
+                        :key="page"
+                        variant="ghost"
+                        size="sm"
+                        :class="['w-8 h-8 p-0', currentPage === page ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'hover:bg-muted']"
+                        @click="currentPage = page"
+                    >
+                        {{ page }}
+                    </Button>
+                </div>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    :disabled="currentPage === totalPages"
+                    @click="currentPage++"
+                >
+                    Next <ChevronRight class="h-4 w-4 ml-1" />
+                </Button>
             </div>
         </div>
 
