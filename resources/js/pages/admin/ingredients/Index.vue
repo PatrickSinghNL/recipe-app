@@ -44,6 +44,7 @@ const imagePreview = ref<string | null>(null);
 const handleImageChange = (event: any) => {
     const file = event.target.files[0];
     form.image = file;
+
     if (file) {
         imagePreview.value = URL.createObjectURL(file);
     } else {
@@ -82,6 +83,7 @@ const submit = () => {
     })).post(editingIngredient.value ? admin.ingredients.update.url(editingIngredient.value.id) : admin.ingredients.store.url(), {
         onSuccess: () => {
             isDialogOpen.value = false;
+
             if (!editingIngredient.value) {
                 form.reset();
             }
@@ -120,6 +122,7 @@ const filteredIngredients = computed(() => {
     return props.ingredients.filter(ingredient => {
         const matchesSearch = ingredient.name.toLowerCase().includes(search.value.toLowerCase());
         const matchesStore = activeStoreId.value === null || ingredient.store_id === activeStoreId.value;
+
         return matchesSearch && matchesStore;
     });
 });
@@ -129,6 +132,7 @@ const totalPages = computed(() => Math.ceil(filteredIngredients.value.length / p
 const paginatedIngredients = computed(() => {
     const start = (currentPage.value - 1) * pageSize;
     const end = start + pageSize;
+
     return filteredIngredients.value.slice(start, end);
 });
 

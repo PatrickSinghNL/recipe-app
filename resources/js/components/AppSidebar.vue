@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, LayoutGrid, ExternalLink, Settings } from 'lucide-vue-next';
+import { BookOpen, LayoutGrid, ExternalLink, Settings, Store } from 'lucide-vue-next';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -45,21 +45,22 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
+        title: 'Stores',
+        href: admin.stores.index.url(),
+        icon: Store,
+    },
+    {
         title: 'Settings',
         href: admin.settings.index.url(),
         icon: Settings,
         items: [
             {
-                title: 'System Settings',
-                href: admin.settings.index.url(),
-            },
-            {
-                title: 'Stores',
-                href: admin.stores.index.url(),
-            },
-            {
                 title: 'User Management',
                 href: admin.users.index.url(),
+            },
+            {
+                title: 'System Settings',
+                href: admin.settings.index.url(),
             },
         ],
     },

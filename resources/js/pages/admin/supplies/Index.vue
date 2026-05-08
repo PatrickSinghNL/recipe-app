@@ -33,6 +33,7 @@ const imagePreview = ref<string | null>(null);
 const handleImageChange = (event: any) => {
     const file = event.target.files[0];
     form.image = file;
+
     if (file) {
         imagePreview.value = URL.createObjectURL(file);
     } else {

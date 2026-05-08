@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { BookOpen, LayoutGrid } from 'lucide-vue-next';
+import { BookOpen, LayoutGrid, Store } from 'lucide-vue-next';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { dashboard } from '@/routes';
 import admin from '@/routes/admin';
@@ -19,6 +19,9 @@ defineOptions({
 defineProps<{
     stats: {
         total_recipes: number;
+        total_ingredients: number;
+        total_supplies: number;
+        total_stores: number;
     };
 }>();
 </script>
@@ -32,12 +35,32 @@ defineProps<{
         <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
                 <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle class="text-sm font-medium">Total Recipes</CardTitle>
-                    <BookOpen class="h-4 w-4 text-muted-foreground" />
+                    <CardTitle class="text-sm font-medium">Ingredients</CardTitle>
+                    <LayoutGrid class="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div class="text-2xl font-bold">{{ stats.total_recipes }}</div>
-                    <p class="text-xs text-muted-foreground">Manage your collection</p>
+                    <div class="text-2xl font-bold">{{ stats.total_ingredients }}</div>
+                    <p class="text-xs text-muted-foreground">Global list items</p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle class="text-sm font-medium">Supplies</CardTitle>
+                    <LayoutGrid class="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div class="text-2xl font-bold">{{ stats.total_supplies }}</div>
+                    <p class="text-xs text-muted-foreground">Kitchen equipment</p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle class="text-sm font-medium">Total Stores</CardTitle>
+                    <Store class="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div class="text-2xl font-bold">{{ stats.total_stores }}</div>
+                    <p class="text-xs text-muted-foreground">Supermarkets & shops</p>
                 </CardContent>
             </Card>
             <!-- Add more stats as needed -->
@@ -79,6 +102,19 @@ defineProps<{
                     </CardHeader>
                     <CardContent>
                         <p class="text-sm text-muted-foreground">Manage the global list of kitchen supplies.</p>
+                    </CardContent>
+                </Card>
+            </Link>
+
+            <Link :href="admin.stores.index.url()">
+                <Card class="hover:bg-muted/50 transition-colors cursor-pointer h-full">
+                    <CardHeader>
+                        <CardTitle class="flex items-center gap-2">
+                            <Store class="h-5 w-5" /> Stores
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p class="text-sm text-muted-foreground">Manage supermarkets and shopping locations.</p>
                     </CardContent>
                 </Card>
             </Link>

@@ -35,6 +35,7 @@ const form = useForm({
     supplies: props.recipe?.supplies.map((s: any) => s.id).sort((a: number, b: number) => {
         const nameA = props.supplies.find(s => s.id === a)?.name ?? '';
         const nameB = props.supplies.find(s => s.id === b)?.name ?? '';
+
         return nameA.localeCompare(nameB);
     }) ?? [],
 });
@@ -65,6 +66,7 @@ const imagePreview = ref<string | null>(null);
 const handleImageChange = (event: any) => {
     const file = event.target.files[0];
     form.image = file;
+
     if (file) {
         imagePreview.value = URL.createObjectURL(file);
     } else {
