@@ -76,9 +76,9 @@ class RecipeController extends Controller
     {
         return Inertia::render('admin/recipes/Form', [
             'recipe' => $recipe->load([
-                'ingredients' => fn($query) => $query->orderBy('name', 'asc'),
-                'supplies' => fn($query) => $query->orderBy('name', 'asc'),
-                'categories' => fn($query) => $query->orderBy('name', 'asc')
+                'ingredients' => fn ($query) => $query->orderBy('name', 'asc'),
+                'supplies' => fn ($query) => $query->orderBy('name', 'asc'),
+                'categories' => fn ($query) => $query->orderBy('name', 'asc'),
             ]),
             'ingredients' => Ingredient::orderBy('name', 'asc')->get(),
             'supplies' => Supply::orderBy('name', 'asc')->get(),
