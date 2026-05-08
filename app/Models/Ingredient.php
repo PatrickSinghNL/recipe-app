@@ -14,12 +14,12 @@ class Ingredient extends Model
         'store_id',
     ];
 
-    public function store()
+    public function store(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
-    public function recipes()
+    public function recipes(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Recipe::class)->withPivot('quantity');
     }

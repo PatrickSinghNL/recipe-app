@@ -11,7 +11,7 @@ class Store extends Model
         'image',
     ];
 
-    public function ingredients()
+    public function ingredients(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Ingredient::class);
     }
