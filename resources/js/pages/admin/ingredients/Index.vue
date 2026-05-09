@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Head, useForm, router } from '@inertiajs/vue3';
-import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-vue-next';
+import { Plus, Pencil, Trash2, Search, ChevronLeft, ChevronRight, Wand2, Loader2 } from 'lucide-vue-next';
 import { ref, computed, watch } from 'vue';
+import { toast } from 'vue-sonner';
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -35,9 +36,104 @@ const form = useForm({
     name: '',
     quantity: '',
     price: '',
+    product_url: '',
     image: null as File | null,
     store_id: '' as string | number,
 });
+
+const isScraping = ref(false);
+
+const scrapeProduct = async () => {
+    if (!form.product_url) {
+        toast.error('Please enter a product URL first.');
+
+        return;
+    }
+
+    isScraping.value = true;
+
+    try {
+        const response = await fetch(admin.ingredients.scrapeProduct.url(), {
+            method: 'POST',
+
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
+            },
+            body: JSON.stringify({ url: form.product_url }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            if (data.price) {
+                form.price = data.price;
+            }
+
+            if (data.name) {
+                form.name = data.name;
+            }
+
+            if (data.store_name) {
+                const store = props.stores.find(s => s.name.toLowerCase() === data.store_name.toLowerCase());
+                if (store) {
+                    form.store_id = store.id.toString();
+                }
+            }
+
+            if (data.image_base64) {
+                const response = await fetch(data.image_base64);
+                const blob = await response.blob();
+                
+                // Determine extension from MIME type
+                const mimeType = blob.type;
+                let extension = 'jpg';
+
+                if (mimeType === 'image/webp') {
+                    extension = 'webp';
+                } else if (mimeType === 'image/png') {
+                    extension = 'png';
+                } else if (mimeType === 'image/gif') {
+                    extension = 'gif';
+                } else if (mimeType === 'image/avif') {
+                    extension = 'avif';
+                } else if (mimeType === 'image/jpeg') {
+                    extension = 'jpg';
+                }
+
+                const filename = `product-${Date.now()}.${extension}`;
+                const file = new File([blob], filename, { type: mimeType });
+                
+                form.image = file;
+                imagePreview.value = URL.createObjectURL(file);
+                toast.success('Product data and image updated!');
+            } else if (data.image) {
+                // Fallback if base64 failed but URL is present
+                try {
+                    const imgResponse = await fetch(data.image);
+                    const blob = await imgResponse.blob();
+                    const filename = data.image.split('/').pop() || 'product.jpg';
+                    const file = new File([blob], filename, { type: blob.type });
+                    
+                    form.image = file;
+                    imagePreview.value = URL.createObjectURL(file);
+                    toast.success('Product data and image updated!');
+                } catch {
+                    toast.success('Price updated! (Image could not be fetched due to security restrictions)');
+                }
+            } else {
+                toast.success('Price updated successfully!');
+            }
+        } else {
+            toast.error(data.error || 'Failed to scrape product data.');
+        }
+    } catch (error) {
+        toast.error('An error occurred while scraping.');
+        console.error(error);
+    } finally {
+        isScraping.value = false;
+    }
+};
 
 const imagePreview = ref<string | null>(null);
 
@@ -57,6 +153,7 @@ const openCreate = () => {
     form.name = '';
     form.quantity = '';
     form.price = '';
+    form.product_url = '';
     form.store_id = 'none';
     form.image = null;
     form.clearErrors();
@@ -69,6 +166,7 @@ const openEdit = (ingredient: any) => {
     form.name = ingredient.name;
     form.quantity = ingredient.quantity ?? '';
     form.price = ingredient.price ?? '';
+    form.product_url = ingredient.product_url ?? '';
     form.store_id = ingredient.store_id ? ingredient.store_id.toString() : 'none';
     form.image = null;
     imagePreview.value = null;
@@ -287,6 +385,24 @@ defineOptions({
                     <DialogTitle>{{ editingIngredient ? 'Edit Ingredient' : 'Add Ingredient' }}</DialogTitle>
                 </DialogHeader>
                 <form @submit.prevent="submit" class="space-y-4 py-4">
+                    <div class="space-y-2">
+                        <Label for="ing-url">Product URL</Label>
+                        <div class="flex gap-2">
+                            <Input id="ing-url" v-model="form.product_url" placeholder="https://..." class="flex-1" />
+                            <Button 
+                                type="button" 
+                                variant="outline" 
+                                size="icon" 
+                                :disabled="isScraping || !form.product_url"
+                                @click="scrapeProduct"
+                                title="Scrape product data from URL"
+                            >
+                                <Loader2 v-if="isScraping" class="h-4 w-4 animate-spin" />
+                                <Wand2 v-else class="h-4 w-4" />
+                            </Button>
+                        </div>
+                        <p v-if="form.errors.product_url" class="text-sm text-destructive">{{ form.errors.product_url }}</p>
+                    </div>
                     <div class="space-y-2">
                         <Label for="ing-name">Name</Label>
                         <Input id="ing-name" v-model="form.name" required />
