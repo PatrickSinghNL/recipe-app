@@ -149,13 +149,13 @@ defineOptions({
     <Head title="Manage Ingredients" />
 
     <div class="flex flex-col gap-6 p-6">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
                 <h1 class="text-2xl font-bold tracking-tight">Ingredients</h1>
                 <p class="text-muted-foreground">Manage global list of ingredients.</p>
             </div>
-            <div class="flex gap-2">
-                <div class="relative w-64">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <div class="relative w-full sm:w-64">
                     <Search class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                         v-model="search"
@@ -163,7 +163,7 @@ defineOptions({
                         class="pl-9"
                     />
                 </div>
-                <Button @click="openCreate">
+                <Button @click="openCreate" class="w-full sm:w-auto">
                     <Plus class="mr-2 h-4 w-4" /> Add Ingredient
                 </Button>
             </div>

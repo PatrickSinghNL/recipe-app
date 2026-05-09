@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { BookOpen, LayoutGrid, Store } from 'lucide-vue-next';
+import { BookOpen, LayoutGrid, Store, ChevronRight } from 'lucide-vue-next';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { dashboard } from '@/routes';
 import admin from '@/routes/admin';
@@ -66,12 +66,16 @@ defineProps<{
             <!-- Add more stats as needed -->
         </div>
 
-        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Link :href="admin.recipes.index.url()">
-                <Card class="hover:bg-muted/50 transition-colors cursor-pointer h-full">
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Link :href="admin.recipes.index.url()" class="h-full">
+                <Card class="group hover:border-primary/50 hover:shadow-lg transition-all cursor-pointer h-full bg-card/50">
                     <CardHeader>
-                        <CardTitle class="flex items-center gap-2">
-                            <BookOpen class="h-5 w-5" /> Recipes
+                        <CardTitle class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <BookOpen class="h-5 w-5 text-primary" /> 
+                                <span>Recipes</span>
+                            </div>
+                            <ChevronRight class="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -80,11 +84,15 @@ defineProps<{
                 </Card>
             </Link>
 
-            <Link :href="admin.ingredients.index.url()">
-                <Card class="hover:bg-muted/50 transition-colors cursor-pointer h-full">
+            <Link :href="admin.ingredients.index.url()" class="h-full">
+                <Card class="group hover:border-primary/50 hover:shadow-lg transition-all cursor-pointer h-full bg-card/50">
                     <CardHeader>
-                        <CardTitle class="flex items-center gap-2">
-                            <LayoutGrid class="h-5 w-5" /> Ingredients
+                        <CardTitle class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <LayoutGrid class="h-5 w-5 text-primary" /> 
+                                <span>Ingredients</span>
+                            </div>
+                            <ChevronRight class="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -93,11 +101,15 @@ defineProps<{
                 </Card>
             </Link>
 
-            <Link :href="admin.supplies.index.url()">
-                <Card class="hover:bg-muted/50 transition-colors cursor-pointer h-full">
+            <Link :href="admin.supplies.index.url()" class="h-full">
+                <Card class="group hover:border-primary/50 hover:shadow-lg transition-all cursor-pointer h-full bg-card/50">
                     <CardHeader>
-                        <CardTitle class="flex items-center gap-2">
-                            <LayoutGrid class="h-5 w-5" /> Supplies
+                        <CardTitle class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <LayoutGrid class="h-5 w-5 text-primary" /> 
+                                <span>Supplies</span>
+                            </div>
+                            <ChevronRight class="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -106,11 +118,15 @@ defineProps<{
                 </Card>
             </Link>
 
-            <Link :href="admin.stores.index.url()">
-                <Card class="hover:bg-muted/50 transition-colors cursor-pointer h-full">
+            <Link :href="admin.stores.index.url()" class="h-full">
+                <Card class="group hover:border-primary/50 hover:shadow-lg transition-all cursor-pointer h-full bg-card/50">
                     <CardHeader>
-                        <CardTitle class="flex items-center gap-2">
-                            <Store class="h-5 w-5" /> Stores
+                        <CardTitle class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <Store class="h-5 w-5 text-primary" /> 
+                                <span>Stores</span>
+                            </div>
+                            <ChevronRight class="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
                         </CardTitle>
                     </CardHeader>
                     <CardContent>

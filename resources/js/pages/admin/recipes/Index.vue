@@ -43,13 +43,13 @@ defineOptions({
     <Head title="Manage Recipes" />
 
     <div class="flex flex-col gap-6 p-6">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h1 class="text-2xl font-bold tracking-tight">Recipes</h1>
                 <p class="text-muted-foreground">Manage your recipe collection.</p>
             </div>
-            <Link :href="admin.recipes.create.url()">
-                <Button>
+            <Link :href="admin.recipes.create.url()" class="w-full sm:w-auto">
+                <Button class="w-full sm:w-auto">
                     <Plus class="mr-2 h-4 w-4" /> Add Recipe
                 </Button>
             </Link>
