@@ -22,6 +22,10 @@ class IngredientController extends Controller
 
     public function store(Request $request)
     {
+        if ($request->has('product_url')) {
+            $request->merge(['product_url' => $this->cleanUrl($request->product_url)]);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'quantity' => 'nullable|string',
@@ -42,6 +46,10 @@ class IngredientController extends Controller
 
     public function update(Request $request, Ingredient $ingredient)
     {
+        if ($request->has('product_url')) {
+            $request->merge(['product_url' => $this->cleanUrl($request->product_url)]);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'quantity' => 'nullable|string',
@@ -237,6 +245,38 @@ class IngredientController extends Controller
                 if (preg_match('/class="[^"]*product-hero-title_unitInfo[^"]*".*?class="[^"]*product-hero-title_unitInfoContent[^"]*".*?>(.*?)<\/span>/is', $html, $matches)) {
                     $quantity = trim(strip_tags($matches[1]));
                 }
+            } elseif (str_contains($request->url, 'vomar.nl')) {
+                $storeName = 'Vomar';
+                // Name (First col H1)
+                if (preg_match('/<h1[^>]*>\s*(.*?)\s*<\/h1>/is', $html, $matches)) {
+                    $name = trim(strip_tags($matches[1]));
+                }
+                // Price (Third col large/small spans)
+                if (preg_match('/<span[^>]*class="large"[^>]*>(\d+)\.<\/span>.*?<span[^>]*class="small"[^>]*>(\d+)<\/span>/is', $html, $matches)) {
+                    $price = $matches[1].'.'.$matches[2];
+                }
+                // Image (Second col img tag)
+                if (preg_match('/<div[^>]*class="image"[^>]*>.*?<img[^>]*src="([^"]+)"/is', $html, $matches)) {
+                    $image = $matches[1];
+                }
+            } elseif (str_contains($request->url, 'lidl.nl')) {
+                $storeName = 'Lidl';
+                // Name
+                if (preg_match('/<h1[^>]*class="heading__title"[^>]*>\s*(.*?)\s*<\/h1>/is', $html, $matches)) {
+                    $name = trim(strip_tags($matches[1]));
+                }
+                // Price
+                if (preg_match('/<div[^>]*class="ods-price__value"[^>]*>\s*([0-9.]+)\s*<\/div>/is', $html, $matches)) {
+                    $price = $matches[1];
+                }
+                // Quantity
+                if (preg_match('/<div[^>]*class="ods-price__footer"[^>]*>.*?<span[^>]*>(.*?)<br/is', $html, $matches)) {
+                    $quantity = trim(strip_tags($matches[1]));
+                }
+                // Image
+                if (preg_match('/<img[^>]*class="[^"]*media-carousel-item__item[^"]*"[^>]*src="([^"]+)"/is', $html, $matches)) {
+                    $image = $matches[1];
+                }
             }
 
             // 1. Try JSON-LD (Usually most reliable)
@@ -395,5 +435,28 @@ class IngredientController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => 'An error occurred during scraping: '.$e->getMessage()], 500);
         }
+    }
+
+    private function cleanUrl($url)
+    {
+        if (! $url) {
+            return $url;
+        }
+
+        $parsed = parse_url($url);
+        if (! $parsed) {
+            return $url;
+        }
+
+        // Strip fragment (the # part)
+        $cleanUrl = ($parsed['scheme'] ?? 'https').'://'.($parsed['host'] ?? '').($parsed['path'] ?? '');
+
+        // For Lidl, we specifically want to strip the tracking fragment
+        // For other sites, we keep the query string as it might be needed
+        if (isset($parsed['query'])) {
+            $cleanUrl .= '?'.$parsed['query'];
+        }
+
+        return $cleanUrl;
     }
 }
