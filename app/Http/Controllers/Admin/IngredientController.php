@@ -83,12 +83,46 @@ class IngredientController extends Controller
         return redirect()->back()->with('success', 'Ingredient deleted.');
     }
 
+    public function updatePrices()
+    {
+        $ingredients = Ingredient::whereNotNull('product_url')->get();
+        $updatedCount = 0;
+        $errors = [];
+
+        foreach ($ingredients as $ingredient) {
+            $data = $this->getScrapedData($ingredient->product_url, false);
+            if (isset($data['price'])) {
+                $ingredient->update(['price' => $data['price']]);
+                $updatedCount++;
+            } elseif (isset($data['error'])) {
+                $errors[] = "Error updating {$ingredient->name}: {$data['error']}";
+            }
+        }
+
+        return response()->json([
+            'message' => "Successfully updated prices for $updatedCount ingredients.",
+            'updated_count' => $updatedCount,
+            'errors' => $errors,
+        ]);
+    }
+
     public function scrapeProduct(Request $request)
     {
         $request->validate([
             'url' => 'required|url',
         ]);
 
+        $data = $this->getScrapedData($request->url);
+
+        if (isset($data['error'])) {
+            return response()->json(['error' => $data['error']], $data['status'] ?? 422);
+        }
+
+        return response()->json($data);
+    }
+
+    private function getScrapedData($url, $includeImage = true)
+    {
         try {
             $response = Http::withHeaders([
                 'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -106,12 +140,19 @@ class IngredientController extends Controller
                 'Sec-Fetch-Site' => 'same-origin',
                 'Sec-Fetch-User' => '?1',
                 'DNT' => '1',
-            ])->timeout(25)->get($request->url);
+            ])->timeout(25)->get($url);
+
+            $price = null;
+            $image = null;
+            $name = null;
+            $quantity = null;
+            $storeName = null;
+            $html = null;
 
             if (! $response->successful()) {
                 // FALLBACK 1: For AH.nl, try their internal API
-                if (str_contains($request->url, 'ah.nl')) {
-                    $path = parse_url($request->url, PHP_URL_PATH);
+                if (str_contains($url, 'ah.nl')) {
+                    $path = parse_url($url, PHP_URL_PATH);
                     if ($path) {
                         $apiUrl = 'https://www.ah.nl/service/rest/delegate?url='.urlencode($path);
                         $userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15';
@@ -141,23 +182,22 @@ class IngredientController extends Controller
                             if ($productData) {
                                 $name = $productData['title'] ?? null;
                                 $price = $productData['price']['current'] ?? null;
-                                $image = null;
                                 if (isset($productData['images'])) {
                                     $img = end($productData['images']);
                                     $image = $img['url'] ?? null;
                                 }
-                                goto process_image;
+
+                                return $this->finalizeData($price, $image, $name, $quantity, $storeName, $url, $includeImage);
                             }
                         }
                     }
 
                     // Try direct REST API as a secondary AH fallback with system curl
-                    if (preg_match('/product\/([a-z0-9]+)/i', $request->url, $matches)) {
+                    if (preg_match('/product\/([a-z0-9]+)/i', $url, $matches)) {
                         $productId = $matches[1];
                         $restUrl = "https://www.ah.nl/service/rest/products/$productId";
                         $tempFile = tempnam(sys_get_temp_dir(), 'ah_rest_');
 
-                        // Use system curl with mobile app headers
                         $command = '/usr/bin/curl -s -L --http2 '.
                                    '-A "App-AH/8.60.1 (iPhone14,2; iOS 17.1.1)" '.
                                    '-H "X-Application: AH-App" '.
@@ -176,12 +216,13 @@ class IngredientController extends Controller
                                 $img = end($productData['images']);
                                 $image = $img['url'] ?? null;
                             }
-                            goto process_image;
+
+                            return $this->finalizeData($price, $image, $name, $quantity, $storeName, $url, $includeImage);
                         }
                     }
                 }
 
-                // FALLBACK 2: Try PHP native stream as a last resort (different TCP fingerprint than curl)
+                // FALLBACK 2: Try PHP native stream
                 if ($response->status() === 403) {
                     $userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15';
                     $context = stream_context_create([
@@ -201,32 +242,20 @@ class IngredientController extends Controller
                         ],
                     ]);
 
-                    $html = @file_get_contents($request->url, false, $context);
+                    $html = @file_get_contents($url, false, $context);
 
-                    if ($html && strlen($html) > 1000 && ! str_contains($html, 'Access Denied')) {
-                        goto parse_html;
+                    if (! ($html && strlen($html) > 1000 && ! str_contains($html, 'Access Denied'))) {
+                        return ['error' => 'Could not access the website (Backend blocked).', 'status' => 422];
                     }
-
-                    if (! $html) {
-                        return response()->json(['error' => 'Could not access the website (Backend blocked).'], 422);
-                    }
-
-                    return response()->json(['error' => 'Could not access the website (Backend blocked). Info: '.substr(strip_tags($html), 0, 100)], 422);
+                } else {
+                    return ['error' => 'Could not access the website (Status: '.$response->status().').', 'status' => 422];
                 }
-
-                return response()->json(['error' => 'Could not access the website (Status: '.$response->status().').'], 422);
+            } else {
+                $html = $response->body();
             }
 
-            $html = $response->body();
-            parse_html:
-            $price = null;
-            $image = null;
-            $name = null;
-            $quantity = null;
-            $storeName = null;
-
             // Detect store from URL
-            if (str_contains($request->url, 'jumbo.com')) {
+            if (str_contains($url, 'jumbo.com')) {
                 $storeName = 'Jumbo';
                 if (preg_match('/data-testid="product-title".*?>(.*?)<\/h1>/is', $html, $matches)) {
                     $name = trim(strip_tags($matches[1]));
@@ -234,7 +263,7 @@ class IngredientController extends Controller
                 if (preg_match('/data-testid="product-subtitle".*?>(.*?)<\/span>/is', $html, $matches)) {
                     $quantity = trim(strip_tags($matches[1]));
                 }
-            } elseif (str_contains($request->url, 'ah.nl')) {
+            } elseif (str_contains($url, 'ah.nl')) {
                 $storeName = 'AH';
                 if (preg_match('/data-testid="pdp-hero-product-title".*?<h1[^>]*>(.*?)<\/h1>/is', $html, $matches)) {
                     $name = trim(strip_tags($matches[1]));
@@ -245,72 +274,57 @@ class IngredientController extends Controller
                 if (preg_match('/class="[^"]*product-hero-title_unitInfo[^"]*".*?class="[^"]*product-hero-title_unitInfoContent[^"]*".*?>(.*?)<\/span>/is', $html, $matches)) {
                     $quantity = trim(strip_tags($matches[1]));
                 }
-            } elseif (str_contains($request->url, 'vomar.nl')) {
+            } elseif (str_contains($url, 'vomar.nl')) {
                 $storeName = 'Vomar';
-                // Name (First col H1)
                 if (preg_match('/<h1[^>]*>\s*(.*?)\s*<\/h1>/is', $html, $matches)) {
                     $name = trim(strip_tags($matches[1]));
                 }
-                // Price (Third col large/small spans)
                 if (preg_match('/<span[^>]*class="large"[^>]*>(\d+)\.<\/span>.*?<span[^>]*class="small"[^>]*>(\d+)<\/span>/is', $html, $matches)) {
                     $price = $matches[1].'.'.$matches[2];
                 }
-                // Image (Second col img tag)
                 if (preg_match('/<div[^>]*class="image"[^>]*>.*?<img[^>]*src="([^"]+)"/is', $html, $matches)) {
                     $image = $matches[1];
                 }
-            } elseif (str_contains($request->url, 'lidl.nl')) {
+            } elseif (str_contains($url, 'lidl.nl')) {
                 $storeName = 'Lidl';
-                // Name
                 if (preg_match('/<h1[^>]*class="heading__title"[^>]*>\s*(.*?)\s*<\/h1>/is', $html, $matches)) {
                     $name = trim(strip_tags($matches[1]));
                 }
-                // Price
                 if (preg_match('/<div[^>]*class="ods-price__value"[^>]*>\s*([0-9.]+)\s*<\/div>/is', $html, $matches)) {
                     $price = $matches[1];
                 }
-                // Quantity
                 if (preg_match('/<div[^>]*class="ods-price__footer"[^>]*>.*?<span[^>]*>(.*?)<br/is', $html, $matches)) {
                     $quantity = trim(strip_tags($matches[1]));
                 }
-                // Image
                 if (preg_match('/<img[^>]*class="[^"]*media-carousel-item__item[^"]*"[^>]*src="([^"]+)"/is', $html, $matches)) {
                     $image = $matches[1];
                 }
             }
 
-            // 1. Try JSON-LD (Usually most reliable)
+            // JSON-LD Fallback
             if (preg_match_all('/<script.*?type="application\/ld\+json".*?>(.*?)<\/script>/is', $html, $scriptMatches)) {
                 foreach ($scriptMatches[1] as $jsonContent) {
                     $data = json_decode($jsonContent, true);
                     if (! $data) {
                         continue;
                     }
-
                     $jsonItems = isset($data['@graph']) ? $data['@graph'] : [$data];
                     foreach ($jsonItems as $item) {
                         $type = $item['@type'] ?? '';
                         if (is_array($type)) {
                             $type = implode(' ', $type);
                         }
-
                         if (str_contains($type, 'Product')) {
-                            // Extract price
-                            if (isset($item['offers'])) {
-                                $offers = is_array($item['offers']) && ! isset($item['offers']['price']) && isset($item['offers'][0])
-                                    ? $item['offers'][0]
-                                    : $item['offers'];
-
+                            if (isset($item['offers']) && ! $price) {
+                                $offers = is_array($item['offers']) && ! isset($item['offers']['price']) && isset($item['offers'][0]) ? $item['offers'][0] : $item['offers'];
                                 if (isset($offers['price'])) {
                                     $price = $offers['price'];
                                 }
                             }
-                            // Extract image
                             if (isset($item['image']) && ! $image) {
                                 $imgData = is_array($item['image']) ? $item['image'][0] : $item['image'];
                                 $image = (is_array($imgData) && isset($imgData['url'])) ? $imgData['url'] : $imgData;
                             }
-                            // Extract name
                             if (isset($item['name']) && ! $name) {
                                 $name = $item['name'];
                             }
@@ -319,13 +333,9 @@ class IngredientController extends Controller
                 }
             }
 
-            // 2. Try Meta Tags (Fallback for price/image/name)
+            // Meta Tags Fallback
             if (! $price) {
-                $metaPatterns = [
-                    '/<meta.*?property="og:price:amount".*?content="(.*?)".*?>/i',
-                    '/<meta.*?property="product:price:amount".*?content="(.*?)".*?>/i',
-                    '/<meta.*?itemprop="price".*?content="(.*?)".*?>/i',
-                ];
+                $metaPatterns = ['/<meta.*?property="og:price:amount".*?content="(.*?)".*?>/i', '/<meta.*?property="product:price:amount".*?content="(.*?)".*?>/i', '/<meta.*?itemprop="price".*?content="(.*?)".*?>/i'];
                 foreach ($metaPatterns as $pattern) {
                     if (preg_match($pattern, $html, $matches)) {
                         $price = $matches[1];
@@ -333,13 +343,8 @@ class IngredientController extends Controller
                     }
                 }
             }
-
             if (! $image) {
-                $imagePatterns = [
-                    '/<meta.*?property="og:image".*?content="(.*?)".*?>/i',
-                    '/<meta.*?property="product:image".*?content="(.*?)".*?>/i',
-                    '/<meta.*?itemprop="image".*?content="(.*?)".*?>/i',
-                ];
+                $imagePatterns = ['/<meta.*?property="og:image".*?content="(.*?)".*?>/i', '/<meta.*?property="product:image".*?content="(.*?)".*?>/i', '/<meta.*?itemprop="image".*?content="(.*?)".*?>/i'];
                 foreach ($imagePatterns as $pattern) {
                     if (preg_match($pattern, $html, $matches)) {
                         $image = $matches[1];
@@ -347,13 +352,8 @@ class IngredientController extends Controller
                     }
                 }
             }
-
             if (! $name) {
-                $namePatterns = [
-                    '/<meta.*?property="og:title".*?content="(.*?)".*?>/i',
-                    '/<meta.*?name="twitter:title".*?content="(.*?)".*?>/i',
-                    '/<meta.*?itemprop="name".*?content="(.*?)".*?>/i',
-                ];
+                $namePatterns = ['/<meta.*?property="og:title".*?content="(.*?)".*?>/i', '/<meta.*?name="twitter:title".*?content="(.*?)".*?>/i', '/<meta.*?itemprop="name".*?content="(.*?)".*?>/i'];
                 foreach ($namePatterns as $pattern) {
                     if (preg_match($pattern, $html, $matches)) {
                         $name = $matches[1];
@@ -362,7 +362,7 @@ class IngredientController extends Controller
                 }
             }
 
-            // 3. HTML Fallbacks (Specific site patterns)
+            // HTML Fallbacks
             if (! $price) {
                 if (preg_match('/class="screenreader-only".*?Prijs:.*?([0-9,.]+)/is', $html, $matches)) {
                     $price = str_replace(',', '.', $matches[1]);
@@ -374,67 +374,49 @@ class IngredientController extends Controller
                     $price = $matches[1].'.'.$matches[2];
                 }
             }
-
-            if (! $image) {
-                if (preg_match('/<img[^>]+data-testid="jum-product-image"[^>]+src="([^"]+)"/is', $html, $matches) ||
-                    preg_match('/<img[^>]+src="([^"]+)"[^>]+data-testid="jum-product-image"/is', $html, $matches) ||
-                    preg_match('/class="product-image"[^>]*>.*?<img[^>]+src="([^"]+)"/is', $html, $matches)) {
-                    $image = $matches[1];
-                }
+            if (! $image && preg_match('/<img[^>]+data-testid="jum-product-image"[^>]+src="([^"]+)"/is', $html, $matches)) {
+                $image = $matches[1];
             }
 
-            // Final check: Ensure image doesn't look like an HTML page
-            if ($image && preg_match('/\.(html|php|aspx|jsp)($|\?)/i', $image)) {
-                $image = null;
-            }
-
-            // Clean up price string
-            if ($price) {
-                $price = preg_replace('/[^0-9.]/', '', $price);
-            }
-
-            process_image:
-            $base64Image = null;
-            if ($image) {
-                if (str_starts_with($image, '/')) {
-                    $parsedUrl = parse_url($request->url);
-                    $image = ($parsedUrl['scheme'] ?? 'https').'://'.($parsedUrl['host'] ?? '').$image;
-                }
-
-                try {
-                    $imageResponse = Http::timeout(10)->withHeaders([
-                        'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                        'Accept' => 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-                        'Accept-Language' => 'nl-NL,nl;q=0.9,en-US;q=0.8,en;q=0.7',
-                        'Referer' => $request->url,
-                        'Sec-Ch-Ua' => '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
-                        'Sec-Ch-Ua-Mobile' => '?0',
-                        'Sec-Ch-Ua-Platform' => '"Windows"',
-                    ])->get($image);
-
-                    if ($imageResponse->successful() && str_starts_with($imageResponse->header('Content-Type'), 'image/')) {
-                        $base64Image = 'data:'.$imageResponse->header('Content-Type').';base64,'.base64_encode($imageResponse->body());
-                    }
-                } catch (\Exception $e) {
-                }
-            }
-
-            if ($price || $image || $name) {
-                return response()->json([
-                    'price' => $price ? (float) $price : null,
-                    'image' => $image,
-                    'image_base64' => $base64Image,
-                    'name' => $name ? html_entity_decode($name) : null,
-                    'quantity' => $quantity,
-                    'store_name' => $storeName,
-                ]);
-            }
-
-            return response()->json(['error' => 'Could not find product data on the page.'], 404);
+            return $this->finalizeData($price, $image, $name, $quantity, $storeName, $url, $includeImage);
 
         } catch (\Exception $e) {
-            return response()->json(['error' => 'An error occurred during scraping: '.$e->getMessage()], 500);
+            return ['error' => $e->getMessage(), 'status' => 500];
         }
+    }
+
+    private function finalizeData($price, $image, $name, $quantity, $storeName, $url, $includeImage)
+    {
+        if ($image && preg_match('/\.(html|php|aspx|jsp)($|\?)/i', $image)) {
+            $image = null;
+        }
+        if ($price) {
+            $price = preg_replace('/[^0-9.]/', '', $price);
+        }
+
+        $base64Image = null;
+        if ($includeImage && $image) {
+            if (str_starts_with($image, '/')) {
+                $parsedUrl = parse_url($url);
+                $image = ($parsedUrl['scheme'] ?? 'https').'://'.($parsedUrl['host'] ?? '').$image;
+            }
+            try {
+                $imageResponse = Http::timeout(10)->withHeaders(['User-Agent' => 'Mozilla/5.0...'])->get($image);
+                if ($imageResponse->successful() && str_starts_with($imageResponse->header('Content-Type'), 'image/')) {
+                    $base64Image = 'data:'.$imageResponse->header('Content-Type').';base64,'.base64_encode($imageResponse->body());
+                }
+            } catch (\Exception $e) {
+            }
+        }
+
+        return [
+            'price' => $price ? (float) $price : null,
+            'image' => $image,
+            'image_base64' => $base64Image,
+            'name' => $name ? html_entity_decode($name) : null,
+            'quantity' => $quantity,
+            'store_name' => $storeName,
+        ];
     }
 
     private function cleanUrl($url)

@@ -214,6 +214,32 @@ const handleDelete = () => {
     });
 };
 
+const isUpdatingPrices = ref(false);
+
+const updatePrices = async () => {
+    isUpdatingPrices.value = true;
+    try {
+        const response = await fetch(admin.ingredients.updatePrices.url(), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
+            },
+        });
+        const data = await response.json();
+        if (response.ok) {
+            toast.success(data.message);
+            router.reload({ only: ['ingredients'] });
+        } else {
+            toast.error(data.error || 'Failed to update prices.');
+        }
+    } catch (error) {
+        toast.error('An error occurred while updating prices.');
+    } finally {
+        isUpdatingPrices.value = false;
+    }
+};
+
 // Filtering & Pagination
 const search = ref('');
 const activeStoreId = ref<number | null>(null);
@@ -265,6 +291,11 @@ defineOptions({
                         class="pl-9"
                     />
                 </div>
+                <Button variant="outline" @click="updatePrices" :disabled="isUpdatingPrices" class="w-full sm:w-auto">
+                    <Wand2 v-if="!isUpdatingPrices" class="mr-2 h-4 w-4" />
+                    <Loader2 v-else class="mr-2 h-4 w-4 animate-spin" />
+                    Update Prices
+                </Button>
                 <Button @click="openCreate" class="w-full sm:w-auto">
                     <Plus class="mr-2 h-4 w-4" /> Add Ingredient
                 </Button>

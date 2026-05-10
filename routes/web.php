@@ -22,6 +22,7 @@ Route::middleware(['auth', 'verified', EnsureUserIsAdmin::class])->group(functio
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('recipes', AdminRecipeController::class);
         Route::post('ingredients/scrape-product', [IngredientController::class, 'scrapeProduct'])->name('ingredients.scrape-product');
+        Route::post('ingredients/update-prices', [IngredientController::class, 'updatePrices'])->name('ingredients.update-prices');
         Route::resource('ingredients', IngredientController::class);
         Route::resource('supplies', SupplyController::class);
         Route::resource('categories', CategoryController::class);
