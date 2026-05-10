@@ -80,6 +80,7 @@ const scrapeProduct = async () => {
 
             if (data.store_name) {
                 const store = props.stores.find(s => s.name.toLowerCase() === data.store_name.toLowerCase());
+
                 if (store) {
                     form.store_id = store.id.toString();
                 }
@@ -291,7 +292,11 @@ defineOptions({
                         class="pl-9"
                     />
                 </div>
-                <Button variant="outline" @click="updatePrices" :disabled="isUpdatingPrices" class="w-full sm:w-auto">
+                <Button 
+                    @click="updatePrices" 
+                    :disabled="isUpdatingPrices" 
+                    class="w-full sm:w-auto bg-sky-500 hover:bg-sky-600 text-white border-none shadow-sm transition-all hover:shadow-md"
+                >
                     <Wand2 v-if="!isUpdatingPrices" class="mr-2 h-4 w-4" />
                     <Loader2 v-else class="mr-2 h-4 w-4 animate-spin" />
                     Update Prices
