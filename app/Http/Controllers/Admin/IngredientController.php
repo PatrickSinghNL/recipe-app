@@ -214,6 +214,7 @@ class IngredientController extends Controller
             $price = null;
             $image = null;
             $name = null;
+            $quantity = null;
             $storeName = null;
 
             // Detect store from URL
@@ -222,12 +223,19 @@ class IngredientController extends Controller
                 if (preg_match('/data-testid="product-title".*?>(.*?)<\/h1>/is', $html, $matches)) {
                     $name = trim(strip_tags($matches[1]));
                 }
+                if (preg_match('/data-testid="product-subtitle".*?>(.*?)<\/span>/is', $html, $matches)) {
+                    $quantity = trim(strip_tags($matches[1]));
+                }
             } elseif (str_contains($request->url, 'ah.nl')) {
                 $storeName = 'AH';
                 if (preg_match('/data-testid="pdp-hero-product-title".*?<h1[^>]*>(.*?)<\/h1>/is', $html, $matches)) {
                     $name = trim(strip_tags($matches[1]));
                 } elseif (preg_match('/class="[^"]*product-hero-title_title[^"]*".*?>(.*?)<\/h1>/is', $html, $matches)) {
                     $name = trim(strip_tags($matches[1]));
+                }
+
+                if (preg_match('/class="[^"]*product-hero-title_unitInfo[^"]*".*?class="[^"]*product-hero-title_unitInfoContent[^"]*".*?>(.*?)<\/span>/is', $html, $matches)) {
+                    $quantity = trim(strip_tags($matches[1]));
                 }
             }
 
@@ -377,6 +385,7 @@ class IngredientController extends Controller
                     'image' => $image,
                     'image_base64' => $base64Image,
                     'name' => $name ? html_entity_decode($name) : null,
+                    'quantity' => $quantity,
                     'store_name' => $storeName,
                 ]);
             }

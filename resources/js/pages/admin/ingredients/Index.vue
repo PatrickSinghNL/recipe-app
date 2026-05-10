@@ -74,6 +74,10 @@ const scrapeProduct = async () => {
                 form.name = data.name;
             }
 
+            if (data.quantity) {
+                form.quantity = data.quantity;
+            }
+
             if (data.store_name) {
                 const store = props.stores.find(s => s.name.toLowerCase() === data.store_name.toLowerCase());
                 if (store) {
