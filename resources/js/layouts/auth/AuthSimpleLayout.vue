@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import AppLogo from '@/components/AppLogo.vue';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { home } from '@/routes';
 
@@ -27,11 +27,9 @@ defineProps<{
                             class="flex flex-col items-center gap-2 font-medium"
                         >
                             <div
-                                class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/20"
+                                class="flex h-16 w-16 items-center justify-center rounded-2xl shadow-xl"
                             >
-                                <AppLogoIcon
-                                    class="size-7 fill-current text-primary-foreground"
-                                />
+                                <AppLogo only-icon class="size-12" />
                             </div>
                         </Link>
                         <div class="space-y-1.5">
