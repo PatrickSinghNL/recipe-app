@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Ingredient;
 use App\Models\Store;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -15,69 +16,117 @@ class IngredientController extends Controller
     public function index()
     {
         return Inertia::render('admin/ingredients/Index', [
-            'ingredients' => Ingredient::with('store')->orderBy('name', 'asc')->get(),
+            'ingredients' => Ingredient::with('stores')->orderBy('name', 'asc')->get(),
             'stores' => Store::orderBy('name', 'asc')->get(),
         ]);
     }
 
     public function store(Request $request)
     {
-        if ($request->has('product_url')) {
-            $request->merge(['product_url' => $this->cleanUrl($request->product_url)]);
-        }
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'quantity' => 'nullable|string',
-            'price' => 'nullable|numeric',
-            'product_url' => 'nullable|url|max:2048',
-            'image' => 'nullable|file|mimes:jpg,jpeg,png,webp,gif,avif|max:2048',
-            'store_id' => 'nullable|exists:stores,id',
+            'stores' => 'nullable|array',
+            'stores.*.store_id' => 'required|exists:stores,id',
+            'stores.*.price' => 'nullable|numeric',
+            'stores.*.quantity' => 'nullable|string',
+            'stores.*.product_url' => 'nullable|url|max:2048',
+            'stores.*.image' => 'nullable|file|mimes:jpg,jpeg,png,webp,gif,avif|max:2048',
         ]);
 
-        if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('ingredients', 'public');
-        }
+        $ingredient = Ingredient::create(['name' => $validated['name']]);
 
-        Ingredient::create($validated);
+        $this->syncStores($ingredient, $request);
 
         return redirect()->back()->with('success', 'Ingredient added.');
     }
 
     public function update(Request $request, Ingredient $ingredient)
     {
-        if ($request->has('product_url')) {
-            $request->merge(['product_url' => $this->cleanUrl($request->product_url)]);
-        }
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'quantity' => 'nullable|string',
-            'price' => 'nullable|numeric',
-            'product_url' => 'nullable|url|max:2048',
-            'image' => 'nullable|file|mimes:jpg,jpeg,png,webp,gif,avif|max:2048',
-            'store_id' => 'nullable|exists:stores,id',
+            'stores' => 'nullable|array',
+            'stores.*.store_id' => 'required|exists:stores,id',
+            'stores.*.price' => 'nullable|numeric',
+            'stores.*.quantity' => 'nullable|string',
+            'stores.*.product_url' => 'nullable|url|max:2048',
+            'stores.*.image' => 'nullable|file|mimes:jpg,jpeg,png,webp,gif,avif|max:2048',
         ]);
 
-        if ($request->hasFile('image')) {
-            if ($ingredient->image) {
-                Storage::disk('public')->delete($ingredient->image);
-            }
-            $validated['image'] = $request->file('image')->store('ingredients', 'public');
-        } else {
-            unset($validated['image']);
-        }
+        $ingredient->update(['name' => $validated['name']]);
 
-        $ingredient->update($validated);
+        $this->syncStores($ingredient, $request);
 
         return redirect()->back()->with('success', 'Ingredient updated.');
     }
 
+    private function syncStores(Ingredient $ingredient, Request $request)
+    {
+        $storesData = $request->input('stores', []);
+        $submittedStoreIds = [];
+
+        foreach ($storesData as $index => $storeEntry) {
+            $storeId = $storeEntry['store_id'];
+
+            // Skip entries with no data at all
+            $hasData = ! empty($storeEntry['price'])
+                || ! empty($storeEntry['quantity'])
+                || ! empty($storeEntry['product_url'])
+                || $request->hasFile("stores.{$index}.image");
+
+            if (! $hasData) {
+                continue;
+            }
+
+            $submittedStoreIds[] = $storeId;
+
+            $pivotData = [
+                'price' => $storeEntry['price'] ?? null,
+                'quantity' => $storeEntry['quantity'] ?? null,
+                'product_url' => $this->cleanUrl($storeEntry['product_url'] ?? null),
+            ];
+
+            // Handle image upload
+            if ($request->hasFile("stores.{$index}.image")) {
+                // Delete old image if exists
+                $existingPivot = $ingredient->stores()->where('store_id', $storeId)->first();
+                if ($existingPivot && $existingPivot->pivot->image) {
+                    Storage::disk('public')->delete($existingPivot->pivot->image);
+                }
+                $pivotData['image'] = $request->file("stores.{$index}.image")->store('ingredients', 'public');
+            }
+
+            // Check if pivot already exists
+            $existing = $ingredient->stores()->where('store_id', $storeId)->first();
+            if ($existing) {
+                $ingredient->stores()->updateExistingPivot($storeId, $pivotData);
+            } else {
+                $ingredient->stores()->attach($storeId, $pivotData);
+            }
+        }
+
+        // Remove stores that were cleared (had data before, now empty)
+        $storesToDetach = $ingredient->stores()
+            ->whereNotIn('stores.id', $submittedStoreIds)
+            ->get();
+
+        foreach ($storesToDetach as $store) {
+            if ($store->pivot->image) {
+                Storage::disk('public')->delete($store->pivot->image);
+            }
+        }
+
+        $ingredient->stores()->detach($storesToDetach->pluck('id'));
+    }
+
     public function destroy(Ingredient $ingredient)
     {
-        if ($ingredient->image) {
-            Storage::disk('public')->delete($ingredient->image);
+        // Clean up all pivot images
+        foreach ($ingredient->stores as $store) {
+            if ($store->pivot->image) {
+                Storage::disk('public')->delete($store->pivot->image);
+            }
         }
+
         $ingredient->delete();
 
         return redirect()->back()->with('success', 'Ingredient deleted.');
@@ -85,22 +134,29 @@ class IngredientController extends Controller
 
     public function updatePrices()
     {
-        $ingredients = Ingredient::whereNotNull('product_url')->get();
+        $pivotRows = DB::table('ingredient_store')
+            ->whereNotNull('product_url')
+            ->get();
+
         $updatedCount = 0;
         $errors = [];
 
-        foreach ($ingredients as $ingredient) {
-            $data = $this->getScrapedData($ingredient->product_url, false);
+        foreach ($pivotRows as $row) {
+            $data = $this->getScrapedData($row->product_url, false);
             if (isset($data['price'])) {
-                $ingredient->update(['price' => $data['price']]);
+                DB::table('ingredient_store')
+                    ->where('id', $row->id)
+                    ->update(['price' => $data['price'], 'updated_at' => now()]);
                 $updatedCount++;
             } elseif (isset($data['error'])) {
-                $errors[] = "Error updating {$ingredient->name}: {$data['error']}";
+                $ingredientName = DB::table('ingredients')->where('id', $row->ingredient_id)->value('name');
+                $storeName = DB::table('stores')->where('id', $row->store_id)->value('name');
+                $errors[] = "Error updating {$ingredientName} ({$storeName}): {$data['error']}";
             }
         }
 
         return response()->json([
-            'message' => "Successfully updated prices for $updatedCount ingredients.",
+            'message' => "Successfully updated prices for $updatedCount entries.",
             'updated_count' => $updatedCount,
             'errors' => $errors,
         ]);

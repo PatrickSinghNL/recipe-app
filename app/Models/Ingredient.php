@@ -3,23 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Ingredient extends Model
 {
     protected $fillable = [
         'name',
-        'quantity',
-        'price',
-        'product_url',
-        'image',
-        'store_id',
     ];
 
-    public function store(): BelongsTo
+    public function stores(): BelongsToMany
     {
-        return $this->belongsTo(Store::class);
+        return $this->belongsToMany(Store::class)
+            ->withPivot('price', 'quantity', 'product_url', 'image')
+            ->withTimestamps();
     }
 
     public function recipes(): BelongsToMany

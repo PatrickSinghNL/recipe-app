@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Store extends Model
 {
@@ -12,8 +12,10 @@ class Store extends Model
         'image',
     ];
 
-    public function ingredients(): HasMany
+    public function ingredients(): BelongsToMany
     {
-        return $this->hasMany(Ingredient::class);
+        return $this->belongsToMany(Ingredient::class)
+            ->withPivot('price', 'quantity', 'product_url', 'image')
+            ->withTimestamps();
     }
 }
