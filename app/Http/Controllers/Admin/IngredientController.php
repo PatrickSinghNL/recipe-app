@@ -88,7 +88,7 @@ class IngredientController extends Controller
             // Handle image upload
             if ($request->hasFile("stores.{$index}.image")) {
                 // Delete old image if exists
-                /** @var \App\Models\Store|null $existingPivot */
+                /** @var Store|null $existingPivot */
                 $existingPivot = $ingredient->stores()->where('store_id', $storeId)->first();
                 if ($existingPivot && $existingPivot->pivot->image) {
                     Storage::disk('public')->delete($existingPivot->pivot->image);
@@ -111,7 +111,7 @@ class IngredientController extends Controller
             ->get();
 
         foreach ($storesToDetach as $store) {
-            /** @var \App\Models\Store $store */
+            /** @var Store $store */
             $pivot = $store->pivot;
             if ($pivot->image) {
                 Storage::disk('public')->delete($pivot->image);
@@ -125,7 +125,7 @@ class IngredientController extends Controller
     {
         // Clean up all pivot images
         foreach ($ingredient->stores as $store) {
-            /** @var \App\Models\Store $store */
+            /** @var Store $store */
             $pivot = $store->pivot;
             if ($pivot->image) {
                 Storage::disk('public')->delete($pivot->image);
